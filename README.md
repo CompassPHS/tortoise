@@ -7,7 +7,7 @@ A client library for interacting with AMQP. Work in progress.
 ## Setup
 
 ```javascript
-var Tortoise = require('tortoise')l
+var Tortoise = require('tortoise');
 var tortoise = new Tortoise('amqp://localhost');
 
 ```
