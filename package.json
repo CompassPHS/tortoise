@@ -1,0 +1,21 @@
+{
+  "name": "tortoise",
+  "homepage": "https://github.com/CompassPHS/tortoise",
+  "version": "0.1.0",
+  "description": "Client library for AMQP",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CompassPHS/tortoise.git"
+  },
+  "dependencies": {
+    "amqplib": "^0.3.2",
+    "lodash": "^3.8.0"
+  },
+  "keywords": [
+    "AMQP",
+    "RabbitMQ"
+  ],
+  "author": "Bryce Bedwell <brycebedwell@gmail.com>",
+  "license": "MIT"
+}
