@@ -1,6 +1,6 @@
 # Tortoise
 
-    npm install amqplib
+    npm install tortoise
 
 A client library for interacting with AMQP. Work in progress.
 
