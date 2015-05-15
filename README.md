@@ -31,7 +31,6 @@ setInterval(function() {
 ```javascript
 var Tortoise = require('tortoise');
 var tortoise = new Tortoise('amqp://localhost');
-
 ```
 
 ## Publishing to a queue
@@ -40,7 +39,6 @@ var tortoise = new Tortoise('amqp://localhost');
 tortoise
   .queue('my-queue', { durable:false })
   .publish({ Hello: 'World' });
-
 ```
 
 ## Publishing to an exchange
@@ -49,7 +47,6 @@ tortoise
 tortoise
   .exchange('my-exchange', 'direct', { durable:false })
   .publish('routing-key', { Hello: 'World' });
-
 ```
 
 ## Subscribing to a queue
@@ -61,7 +58,6 @@ tortoise
     // Handle
     ack();
   });
-
 ```
 
 ```javascript
@@ -72,5 +68,4 @@ tortoise
     // Handle
     ack();
   });
-
 ```
