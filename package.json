@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "Client library for AMQP",
   "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha --ui exports test"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/CompassPHS/tortoise.git"
@@ -17,5 +20,8 @@
     "RabbitMQ"
   ],
   "author": "Bryce Bedwell <brycebedwell@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^2.2.5"
+  }
 }

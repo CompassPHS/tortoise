@@ -1,8 +1,30 @@
 # Tortoise
 
+[![Build Status](https://travis-ci.org/CompassPHS/tortoise.svg)](https://travis-ci.org/CompassPHS/tortoise)
+
     npm install tortoise
 
 A client library for interacting with AMQP. Work in progress.
+
+## Example
+
+```javascript
+var Tortoise = require('tortoise')
+  , tortoise = new Tortoise('amqp://localhost');
+
+tortoise
+  .queue('my-queue')
+  .subscribe(function(msg, ack) {
+    console.log(msg);
+    ack();
+  });
+
+setInterval(function() {
+  tortoise
+    .queue('my-queue')
+    .publish({ Hello: 'World' });
+}, 1000);
+```
 
 ## Setup
 
