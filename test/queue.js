@@ -12,7 +12,7 @@ var quickPromise = function(returnValue) {
 
 function build() {
 
-  var ch = { consume: emptyFn,assertQueue: emptyFn, assertExchange: emptyFn, publish: emptyFn, close: emptyFn, sendToQueue: emptyFn };
+  var ch = { ack: emptyFn, bindQueue: emptyFn, consume: emptyFn,assertQueue: emptyFn, assertExchange: emptyFn, publish: emptyFn, close: emptyFn, sendToQueue: emptyFn };
   var conn = { createChannel: emptyFn };
 
   // Default stubbing behavior
@@ -21,6 +21,9 @@ function build() {
   var assertQueueStub = sinon.stub(ch, 'assertQueue').returns(quickPromise());
   var sendToQueueStub = sinon.stub(ch, 'sendToQueue');
   var closeStub = sinon.stub(ch, 'close').returns(quickPromise());
+  var consumeStub = sinon.stub(ch, 'consume').returns(quickPromise());
+  var bindQueueStub = sinon.stub(ch, 'bindQueue').returns(quickPromise());
+  var ackStub = sinon.stub(ch, 'ack');
 
   return {
     conn: {
@@ -30,7 +33,9 @@ function build() {
       assertExchange: assertExchangeStub,
       sendToQueue: sendToQueueStub,
       close: closeStub,
-      assertQueue: assertQueueStub
+      assertQueue: assertQueueStub,
+      consume: consumeStub,
+      ack: ackStub
     }
   }
 }
@@ -88,6 +93,27 @@ suite('Queue', function() {
         assert(stubs.ch.assertQueue.calledWithExactly('', {}));
         done()
       });
+  });
+
+  test('subscribe to queue calls handler on message received', function(done) {
+    var stubs = build();
+
+    new Queue(quickPromise(stubs.conn))
+      .subscribe(function(msg) {
+        assert.equal(msg.Hello, 'World');
+        done();
+      }).then(function() {
+        var handler = stubs.ch.consume.args[0][1];
+        handler({content:new Buffer(JSON.stringify({Hello:'World'}))});
+      });
+  });
+
+  test('subscribe with exchange binds to exchange', function() {
+
+  });
+
+  test('subscribe without exchange does not bind to exchange', function() {
+
   });
 
 });
