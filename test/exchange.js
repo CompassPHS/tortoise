@@ -1,5 +1,6 @@
 var assert = require('assert')
   , sinon = require('sinon')
+  , async = require('async')
   , Promise = require('bluebird');
 
 var Exchange = require('../lib/exchange');
@@ -37,18 +38,14 @@ suite('Exchange', function() {
   test('publish publishes message to provided exchange', function(done) {
     var stubs = build();
 
-    var opts = {};
-
     var ex = new Exchange(quickPromise(stubs.conn))
-      .configure('myExchange', 'direct', opts)
+      .configure('myExchange', 'direct', {})
       .publish('rk', {Hello:'World'})
       .then(function() {
         assert(stubs.ch.publish.calledWith('myExchange', 'rk'))
         
         var msg = JSON.parse(stubs.ch.publish.args[0][2].toString());
         assert.equal(msg.Hello, 'World');
-
-        assert(stubs.ch.assertExchange.calledWithExactly('myExchange', 'direct', opts))
 
         done();
       });
@@ -63,6 +60,31 @@ suite('Exchange', function() {
       .then(function() {
         assert(stubs.ch.close.calledOnce)
         done();
+      });
+  });
+
+  test('configure sets options', function(done) {
+    var stubs = build();
+
+    var opts = {};
+
+    new Exchange(quickPromise(stubs.conn))
+      .configure('myExchange', 'direct', opts)
+      .publish('rk', {})
+      .then(function() {
+        assert(stubs.ch.assertExchange.calledWithExactly('myExchange', 'direct', opts));
+        done()
+      });
+  });
+
+  test('default options are set', function(done) {
+    var stubs = build();
+
+    new Exchange(quickPromise(stubs.conn))
+      .publish('rk', {})
+      .then(function() {
+        assert(stubs.ch.assertExchange.calledWithExactly('', '', {}));
+        done()
       });
   });
 
