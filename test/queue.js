@@ -70,6 +70,19 @@ suite('Queue', function() {
       });
   });
 
+  test('publish publishes with options', function(done) {
+    var stubs = build();
+
+    var opts = { persistent: true };
+
+    var ex = new Queue(quickPromise(stubs.conn))
+      .publish({}, opts)
+      .then(function() {
+        assert.equal(stubs.ch.sendToQueue.args[0][2], opts)
+        done();
+      });
+  });
+
   test('configure sets options', function(done) {
     var stubs = build();
 

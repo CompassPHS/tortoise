@@ -63,6 +63,19 @@ suite('Exchange', function() {
       });
   });
 
+  test('publish publishes with options', function(done) {
+    var stubs = build();
+
+    var opts = { persistent: true };
+
+    var ex = new Exchange(quickPromise(stubs.conn))
+      .publish('rk', {}, opts)
+      .then(function() {
+        assert.equal(stubs.ch.publish.args[0][3], opts)
+        done();
+      });
+  });
+
   test('configure sets options', function(done) {
     var stubs = build();
 
