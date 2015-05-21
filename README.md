@@ -108,7 +108,7 @@ tortoise
   .subscribe(function(msg, ack, nack) {
     var routingKey = this.fields.routingKey;
     // Handle
-    ack();
+    ack(); // or nack();
   });
 ```
 
