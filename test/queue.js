@@ -12,7 +12,7 @@ var quickPromise = function(returnValue) {
 
 function build() {
 
-  var ch = { nack: emptyFn, ack: emptyFn, bindQueue: emptyFn, consume: emptyFn,assertQueue: emptyFn, assertExchange: emptyFn, publish: emptyFn, close: emptyFn, sendToQueue: emptyFn };
+  var ch = { prefetch: emptyFn, nack: emptyFn, ack: emptyFn, bindQueue: emptyFn, consume: emptyFn,assertQueue: emptyFn, assertExchange: emptyFn, publish: emptyFn, close: emptyFn, sendToQueue: emptyFn };
   var conn = { createChannel: emptyFn };
 
   // Default stubbing behavior
@@ -25,6 +25,7 @@ function build() {
   var bindQueueStub = sinon.stub(ch, 'bindQueue').returns(quickPromise());
   var ackStub = sinon.stub(ch, 'ack');
   var nackStub = sinon.stub(ch, 'nack');
+  var prefetchStub = sinon.stub(ch, 'prefetch').returns(quickPromise());
 
   return {
     conn: {
@@ -37,7 +38,8 @@ function build() {
       assertQueue: assertQueueStub,
       consume: consumeStub,
       ack: ackStub,
-      nack: nackStub
+      nack: nackStub,
+      prefetch: prefetchStub
     }
   }
 }
@@ -175,6 +177,31 @@ suite('Queue', function() {
         assert(stubs.ch.nack.calledOnce);
         assert.equal(stubs.ch.nack.args[0][0], msg);
         assert.equal(stubs.ch.ack.callCount, 0);
+      });
+  });
+
+  test('subscribe sets prefetch when set', function(done) {
+    var stubs = build();
+
+    new Queue(quickPromise(stubs.conn))
+      .prefetch(1)
+      .subscribe(emptyFn)
+      .then(function() {
+        var prefetch = stubs.ch.prefetch.args[0][0];
+        assert(stubs.ch.prefetch.calledOnce);
+        assert.equal(prefetch, 1);
+        done();
+      });
+  });
+
+  test('subscribe ignores prefetch when not set', function(done) {
+    var stubs = build();
+
+    new Queue(quickPromise(stubs.conn))
+      .subscribe(emptyFn)
+      .then(function() {
+        assert.equal(stubs.ch.prefetch.callCount, 0);
+        done();
       });
   });
 
