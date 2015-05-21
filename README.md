@@ -6,6 +6,10 @@
 
 A client library for interacting with AMQP. Work in progress.
 
+## Notes
+
+  * The content/body of a message 
+
 ## Example
 
 ```javascript
@@ -69,3 +73,40 @@ tortoise
     ack();
   });
 ```
+
+## Accessing message data
+
+The callback function provided to the `subscribe` method will be scoped to the message, i.e. the `this` object will contain the properties of the message. The object would look similar to this:
+
+```javascript
+{
+  fields: {
+    deliveryTag: <int>,
+    redelivered: <bool>,
+    routingKey: <string>,
+    ...
+  },
+  properties: {
+    contentType: <string>,
+    headers: {
+      ...
+    },
+    ...
+  }
+}
+```
+
+So, if I wanted to access the `routingKey` that was provided, I would access it by:
+
+```javascript
+tortoise
+  .queue('my-queue', { durable: false })
+  .exchange('my-exchange', 'topic', 'event.*', { durable: false })
+  .subscribe(function(msg, ack) {
+    var routingKey = this.fields.routingKey;
+    // Handle
+    ack();
+  });
+```
+
+This is useful if you subcribe to wildcard topics on an exchange but wanted to know what the actual topic (`routingKey`) was.

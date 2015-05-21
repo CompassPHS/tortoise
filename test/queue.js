@@ -121,6 +121,19 @@ suite('Queue', function() {
       });
   });
 
+  test('subscribe sets msg data to scope', function(done) {
+    var stubs = build();
+
+    new Queue(quickPromise(stubs.conn))
+      .subscribe(function(msg) {
+        assert.equal(this.field, 'test');
+        done();
+      }).then(function() {
+        var handler = stubs.ch.consume.args[0][1];
+        handler({field:'test', content:new Buffer(JSON.stringify({Hello:'World'}))});
+      });
+  })
+
   test('subscribe with exchange binds to exchange', function() {
 
   });
