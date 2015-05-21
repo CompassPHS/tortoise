@@ -12,7 +12,7 @@ var quickPromise = function(returnValue) {
 
 function build() {
 
-  var ch = { ack: emptyFn, bindQueue: emptyFn, consume: emptyFn,assertQueue: emptyFn, assertExchange: emptyFn, publish: emptyFn, close: emptyFn, sendToQueue: emptyFn };
+  var ch = { nack: emptyFn, ack: emptyFn, bindQueue: emptyFn, consume: emptyFn,assertQueue: emptyFn, assertExchange: emptyFn, publish: emptyFn, close: emptyFn, sendToQueue: emptyFn };
   var conn = { createChannel: emptyFn };
 
   // Default stubbing behavior
@@ -24,6 +24,7 @@ function build() {
   var consumeStub = sinon.stub(ch, 'consume').returns(quickPromise());
   var bindQueueStub = sinon.stub(ch, 'bindQueue').returns(quickPromise());
   var ackStub = sinon.stub(ch, 'ack');
+  var nackStub = sinon.stub(ch, 'nack');
 
   return {
     conn: {
@@ -35,7 +36,8 @@ function build() {
       close: closeStub,
       assertQueue: assertQueueStub,
       consume: consumeStub,
-      ack: ackStub
+      ack: ackStub,
+      nack: nackStub
     }
   }
 }
@@ -132,7 +134,49 @@ suite('Queue', function() {
         var handler = stubs.ch.consume.args[0][1];
         handler({field:'test', content:new Buffer(JSON.stringify({Hello:'World'}))});
       });
-  })
+  });
+
+  test('subscribe and ack acks message', function(done) {
+    var stubs = build();
+
+    new Queue(quickPromise(stubs.conn))
+      .subscribe(function(msg, ack) {
+        ack();
+        done();
+      }).then(function() {
+        var msg = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+
+        // Call handler code
+        var handler = stubs.ch.consume.args[0][1];
+        handler(msg);
+
+        // Verify ack was called
+        assert(stubs.ch.ack.calledOnce);
+        assert.equal(stubs.ch.ack.args[0][0], msg);
+        assert.equal(stubs.ch.nack.callCount, 0);
+      });
+  });
+
+  test('subscribe and nack nacks message', function(done) {
+    var stubs = build();
+
+    new Queue(quickPromise(stubs.conn))
+      .subscribe(function(msg, ack, nack) {
+        nack();
+        done();
+      }).then(function() {
+        var msg = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+
+        // Call handler code
+        var handler = stubs.ch.consume.args[0][1];
+        handler(msg);
+
+        // Verify ack was called
+        assert(stubs.ch.nack.calledOnce);
+        assert.equal(stubs.ch.nack.args[0][0], msg);
+        assert.equal(stubs.ch.ack.callCount, 0);
+      });
+  });
 
   test('subscribe with exchange binds to exchange', function() {
 

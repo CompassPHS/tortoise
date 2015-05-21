@@ -61,9 +61,9 @@ tortoise
 ```javascript
 tortoise
   .queue('my-queue', { durable: false })
-  .subscribe(function(msg, ack) {
+  .subscribe(function(msg, ack, nack) {
     // Handle
-    ack();
+    ack(); // or nack();
   });
 ```
 
@@ -71,9 +71,9 @@ tortoise
 tortoise
   .queue('my-queue', { durable: false })
   .exchange('my-exchange', 'direct', 'routing-key', { durable: false })
-  .subscribe(function(msg, ack) {
+  .subscribe(function(msg, ack, nack) {
     // Handle
-    ack();
+    ack(); // or nack();
   });
 ```
 
@@ -105,7 +105,7 @@ So, if I wanted to access the `routingKey` that was provided, I would access it 
 tortoise
   .queue('my-queue', { durable: false })
   .exchange('my-exchange', 'topic', 'event.*', { durable: false })
-  .subscribe(function(msg, ack) {
+  .subscribe(function(msg, ack, nack) {
     var routingKey = this.fields.routingKey;
     // Handle
     ack();
