@@ -1,6 +1,9 @@
 # Tortoise
 
+[![NPM](https://nodei.co/npm/tortoise.png?downloads=true&downloadRank=true)](https://nodei.co/npm/tortoise/)
+
 [![Build Status](https://travis-ci.org/CompassPHS/tortoise.svg)](https://travis-ci.org/CompassPHS/tortoise)
+[![Dependencies](https://david-dm.org/compassphs/tortoise.svg)](https://david-dm.org/compassphs/tortoise)
 
     npm install tortoise
 
