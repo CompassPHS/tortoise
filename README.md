@@ -8,7 +8,7 @@ A client library for interacting with AMQP. Work in progress.
 
 ## Notes
 
-  * The content/body of a message 
+  * The content/body of a message is expected to be an object literal (without functions) and will be serialized/deserialized by the library
 
 ## Example
 
