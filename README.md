@@ -63,7 +63,7 @@ tortoise
 ```javascript
 tortoise
   .queue('my-queue', { durable: false })
-  .prefetch(1);
+  .prefetch(1)
   .subscribe(function(msg, ack, nack) {
     // Handle
     ack(); // or nack();
