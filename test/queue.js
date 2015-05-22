@@ -1,4 +1,4 @@
-var assert = require('assert')
+var assert = require('chai').assert
   , sinon = require('sinon')
   , async = require('async')
   , Promise = require('bluebird');
@@ -141,42 +141,44 @@ suite('Queue', function() {
   test('subscribe and ack acks message', function(done) {
     var stubs = build();
 
+    var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+
     new Queue(quickPromise(stubs.conn))
       .subscribe(function(msg, ack) {
         ack();
-        done();
-      }).then(function() {
-        var msg = {content:new Buffer(JSON.stringify({Hello:'World'}))};
-
-        // Call handler code
-        var handler = stubs.ch.consume.args[0][1];
-        handler(msg);
 
         // Verify ack was called
         assert(stubs.ch.ack.calledOnce);
-        assert.equal(stubs.ch.ack.args[0][0], msg);
+        assert.equal(stubs.ch.ack.args[0][0], message);
         assert.equal(stubs.ch.nack.callCount, 0);
+
+        done();
+      }).then(function() {
+        // Call handler code
+        var handler = stubs.ch.consume.args[0][1];
+        handler(message);
       });
   });
 
   test('subscribe and nack nacks message', function(done) {
     var stubs = build();
 
+    var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+    
     new Queue(quickPromise(stubs.conn))
       .subscribe(function(msg, ack, nack) {
         nack();
+        
+        // Verify nack was called
+        assert(stubs.ch.nack.calledOnce);
+        assert.equal(stubs.ch.nack.args[0][0], message);
+        assert.equal(stubs.ch.ack.callCount, 0);
+
         done();
       }).then(function() {
-        var msg = {content:new Buffer(JSON.stringify({Hello:'World'}))};
-
         // Call handler code
         var handler = stubs.ch.consume.args[0][1];
-        handler(msg);
-
-        // Verify ack was called
-        assert(stubs.ch.nack.calledOnce);
-        assert.equal(stubs.ch.nack.args[0][0], msg);
-        assert.equal(stubs.ch.ack.callCount, 0);
+        handler(message);
       });
   });
 
