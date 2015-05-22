@@ -1,9 +1,7 @@
 var assert = require('chai').assert
   , sinon = require('sinon')
-  , async = require('async')
-  , Promise = require('bluebird');
-
-var Exchange = require('../lib/exchange');
+  , Promise = require('bluebird')
+  , exchange = require('../lib/exchange');
 
 var emptyFn = function() { };
 var quickPromise = function(returnValue) {
@@ -38,7 +36,7 @@ suite('Exchange', function() {
   test('publish publishes message to provided exchange', function(done) {
     var stubs = build();
 
-    var ex = new Exchange(quickPromise(stubs.conn))
+    var ex = exchange.create(quickPromise(stubs.conn))
       .configure('myExchange', 'direct', {})
       .publish('rk', {Hello:'World'})
       .then(function() {
@@ -55,7 +53,7 @@ suite('Exchange', function() {
   test('publish closes channel', function(done) {
     var stubs = build();
 
-    var ex = new Exchange(quickPromise(stubs.conn))
+    var ex = exchange.create(quickPromise(stubs.conn))
       .publish('rk', {})
       .then(function() {
         assert(stubs.ch.close.calledOnce)
@@ -68,7 +66,7 @@ suite('Exchange', function() {
 
     var opts = { persistent: true };
 
-    var ex = new Exchange(quickPromise(stubs.conn))
+    var ex = exchange.create(quickPromise(stubs.conn))
       .publish('rk', {}, opts)
       .then(function() {
         assert.equal(stubs.ch.publish.args[0][3], opts)
@@ -81,7 +79,7 @@ suite('Exchange', function() {
 
     var opts = {};
 
-    new Exchange(quickPromise(stubs.conn))
+    exchange.create(quickPromise(stubs.conn))
       .configure('myExchange', 'direct', opts)
       .publish('rk', {})
       .then(function() {
@@ -93,7 +91,7 @@ suite('Exchange', function() {
   test('default options are set', function(done) {
     var stubs = build();
 
-    new Exchange(quickPromise(stubs.conn))
+    exchange.create(quickPromise(stubs.conn))
       .publish('rk', {})
       .then(function() {
         assert(stubs.ch.assertExchange.calledWithExactly('', '', {}));

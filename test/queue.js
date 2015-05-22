@@ -1,9 +1,7 @@
 var assert = require('chai').assert
   , sinon = require('sinon')
-  , async = require('async')
-  , Promise = require('bluebird');
-
-var Queue = require('../lib/queue');
+  , Promise = require('bluebird')
+  , queue = require('../lib/queue');
 
 var emptyFn = function() { };
 var quickPromise = function(returnValue) {
@@ -39,7 +37,8 @@ function build() {
       consume: consumeStub,
       ack: ackStub,
       nack: nackStub,
-      prefetch: prefetchStub
+      prefetch: prefetchStub,
+      bindQueue: bindQueueStub
     }
   }
 }
@@ -49,7 +48,7 @@ suite('Queue', function() {
   test('publish publishes message to provided queue', function(done) {
     var stubs = build();
 
-    var ex = new Queue(quickPromise(stubs.conn))
+    var ex = queue.create(quickPromise(stubs.conn))
       .configure('myQueue', {})
       .publish({Hello:'World'})
       .then(function() {
@@ -66,7 +65,7 @@ suite('Queue', function() {
   test('publish closes channel', function(done) {
     var stubs = build();
 
-    var ex = new Queue(quickPromise(stubs.conn))
+    var ex = queue.create(quickPromise(stubs.conn))
       .publish({})
       .then(function() {
         assert(stubs.ch.close.calledOnce)
@@ -79,7 +78,7 @@ suite('Queue', function() {
 
     var opts = { persistent: true };
 
-    var ex = new Queue(quickPromise(stubs.conn))
+    var ex = queue.create(quickPromise(stubs.conn))
       .publish({}, opts)
       .then(function() {
         assert.equal(stubs.ch.sendToQueue.args[0][2], opts)
@@ -92,7 +91,7 @@ suite('Queue', function() {
 
     var opts = {};
 
-    new Queue(quickPromise(stubs.conn))
+    queue.create(quickPromise(stubs.conn))
       .configure('myQueue', opts)
       .publish({})
       .then(function() {
@@ -104,7 +103,7 @@ suite('Queue', function() {
   test('default options are set', function(done) {
     var stubs = build();
 
-    new Queue(quickPromise(stubs.conn))
+    queue.create(quickPromise(stubs.conn))
       .publish({})
       .then(function() {
         assert(stubs.ch.assertQueue.calledWithExactly('', {}));
@@ -115,7 +114,7 @@ suite('Queue', function() {
   test('subscribe to queue calls handler on message received', function(done) {
     var stubs = build();
 
-    new Queue(quickPromise(stubs.conn))
+    queue.create(quickPromise(stubs.conn))
       .subscribe(function(msg) {
         assert.equal(msg.Hello, 'World');
         done();
@@ -128,7 +127,7 @@ suite('Queue', function() {
   test('subscribe sets msg data to scope', function(done) {
     var stubs = build();
 
-    new Queue(quickPromise(stubs.conn))
+    queue.create(quickPromise(stubs.conn))
       .subscribe(function(msg) {
         assert.equal(this.field, 'test');
         done();
@@ -143,7 +142,7 @@ suite('Queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
 
-    new Queue(quickPromise(stubs.conn))
+    queue.create(quickPromise(stubs.conn))
       .subscribe(function(msg, ack) {
         ack();
 
@@ -165,7 +164,7 @@ suite('Queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
     
-    new Queue(quickPromise(stubs.conn))
+    queue.create(quickPromise(stubs.conn))
       .subscribe(function(msg, ack, nack) {
         nack();
         
@@ -185,7 +184,7 @@ suite('Queue', function() {
   test('subscribe sets prefetch when set', function(done) {
     var stubs = build();
 
-    new Queue(quickPromise(stubs.conn))
+    queue.create(quickPromise(stubs.conn))
       .prefetch(1)
       .subscribe(emptyFn)
       .then(function() {
@@ -199,7 +198,7 @@ suite('Queue', function() {
   test('subscribe ignores prefetch when not set', function(done) {
     var stubs = build();
 
-    new Queue(quickPromise(stubs.conn))
+    queue.create(quickPromise(stubs.conn))
       .subscribe(emptyFn)
       .then(function() {
         assert.equal(stubs.ch.prefetch.callCount, 0);
@@ -207,12 +206,28 @@ suite('Queue', function() {
       });
   });
 
-  test('subscribe with exchange binds to exchange', function() {
-
+  test('subscribe with exchange binds to exchange', function(done) {
+    var stubs = build();
+    queue.create(quickPromise(stubs.conn))
+      .configure('my-queue')
+      .exchange('my-exchange', 'topic', 'routing.key', { durable: true })
+      .subscribe(emptyFn)
+      .then(function() {
+        assert(stubs.ch.assertExchange.calledWith('my-exchange', 'topic', { durable: true }));
+        assert(stubs.ch.bindQueue.calledWith('my-queue', 'my-exchange', 'routing.key'));
+        done();
+      });
   });
 
-  test('subscribe without exchange does not bind to exchange', function() {
-
+  test('subscribe without exchange does not bind to exchange', function(done) {
+    var stubs = build();
+    queue.create(quickPromise(stubs.conn))
+      .subscribe(emptyFn)
+      .then(function() {
+        assert.equal(stubs.ch.assertExchange.callCount, 0);
+        assert.equal(stubs.ch.bindQueue.callCount, 0);
+        done();
+      });
   });
 
 });
