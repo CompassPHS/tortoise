@@ -11,7 +11,8 @@ var p = function(v) {
 function build() {
 
   var ch = { prefetch: fn, nack: fn, ack: fn, bindQueue: fn, consume: fn,assertQueue: fn, assertExchange: fn, publish: fn, close: fn, sendToQueue: fn };
-
+  var chFactory = { get: fn }
+  
   // Default stubbing behavior
   var assertExchangeStub = sinon.stub(ch, 'assertExchange').returns(p());
   var assertQueueStub = sinon.stub(ch, 'assertQueue').returns(p());
@@ -22,6 +23,7 @@ function build() {
   var ackStub = sinon.stub(ch, 'ack');
   var nackStub = sinon.stub(ch, 'nack');
   var prefetchStub = sinon.stub(ch, 'prefetch').returns(p());
+  var getStub = sinon.stub(chFactory, 'get').returns(p(ch));
 
   return {
     ch: {
@@ -34,6 +36,9 @@ function build() {
       nack: nackStub,
       prefetch: prefetchStub,
       bindQueue: bindQueueStub
+    },
+    chFactory: {
+      get: getStub
     }
   }
 }
@@ -43,7 +48,7 @@ suite('Queue', function() {
   test('publish publishes message to provided queue', function(done) {
     var stubs = build();
 
-    var ex = queue.create(sinon.stub().returns(p(stubs.ch)))
+    var ex = queue.create(stubs.chFactory)
       .configure('myQueue', {})
       .publish({Hello:'World'})
       .then(function() {
@@ -60,7 +65,7 @@ suite('Queue', function() {
   test('publish closes channel', function(done) {
     var stubs = build();
 
-    var ex = queue.create(sinon.stub().returns(p(stubs.ch)))
+    var ex = queue.create(stubs.chFactory)
       .publish({})
       .then(function() {
         assert(stubs.ch.close.calledOnce)
@@ -73,7 +78,7 @@ suite('Queue', function() {
 
     var opts = { persistent: true };
 
-    var ex = queue.create(sinon.stub().returns(p(stubs.ch)))
+    var ex = queue.create(stubs.chFactory)
       .publish({}, opts)
       .then(function() {
         assert.equal(stubs.ch.sendToQueue.args[0][2], opts)
@@ -86,7 +91,7 @@ suite('Queue', function() {
 
     var opts = {};
 
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .configure('myQueue', opts)
       .publish({})
       .then(function() {
@@ -98,7 +103,7 @@ suite('Queue', function() {
   test('default options are set', function(done) {
     var stubs = build();
 
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .publish({})
       .then(function() {
         assert(stubs.ch.assertQueue.calledWithExactly('', {}));
@@ -109,7 +114,7 @@ suite('Queue', function() {
   test('subscribe to queue calls handler on message received', function(done) {
     var stubs = build();
 
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .subscribe(function(msg) {
         assert.equal(msg.Hello, 'World');
         done();
@@ -122,7 +127,7 @@ suite('Queue', function() {
   test('subscribe sets msg data to scope', function(done) {
     var stubs = build();
 
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .subscribe(function(msg) {
         assert.equal(this.field, 'test');
         done();
@@ -137,7 +142,7 @@ suite('Queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
 
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .subscribe(function(msg, ack) {
         ack();
 
@@ -159,7 +164,7 @@ suite('Queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
     
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .subscribe(function(msg, ack, nack) {
         nack();
         
@@ -179,7 +184,7 @@ suite('Queue', function() {
   test('subscribe sets prefetch when set', function(done) {
     var stubs = build();
 
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .prefetch(1)
       .subscribe(fn)
       .then(function() {
@@ -193,7 +198,7 @@ suite('Queue', function() {
   test('subscribe ignores prefetch when not set', function(done) {
     var stubs = build();
 
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .subscribe(fn)
       .then(function() {
         assert.equal(stubs.ch.prefetch.callCount, 0);
@@ -203,7 +208,7 @@ suite('Queue', function() {
 
   test('subscribe with exchange binds to exchange', function(done) {
     var stubs = build();
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .configure('my-queue')
       .exchange('my-exchange', 'topic', 'routing.key', { durable: true })
       .subscribe(fn)
@@ -216,7 +221,7 @@ suite('Queue', function() {
 
   test('subscribe without exchange does not bind to exchange', function(done) {
     var stubs = build();
-    queue.create(sinon.stub().returns(p(stubs.ch)))
+    queue.create(stubs.chFactory)
       .subscribe(fn)
       .then(function() {
         assert.equal(stubs.ch.assertExchange.callCount, 0);

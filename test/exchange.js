@@ -11,17 +11,22 @@ var p = function(v) {
 function build() {
 
   var ch = { assertExchange: fn, publish: fn, close: fn };
+  var chFactory = { get: fn }
 
   // Default stubbing behavior
   var assertExchangeStub = sinon.stub(ch, 'assertExchange').returns(p());
   var publishStub = sinon.stub(ch, 'publish');
   var closeStub = sinon.stub(ch, 'close').returns(p());
+  var getStub = sinon.stub(chFactory, 'get').returns(p(ch));
 
   return {
     ch: {
       assertExchange: assertExchangeStub,
       publish: publishStub,
       close: closeStub
+    },
+    chFactory: {
+      get: getStub
     }
   }
 }
@@ -31,7 +36,7 @@ suite('Exchange', function() {
   test('publish publishes message to provided exchange', function(done) {
     var stubs = build();
 
-    var ex = exchange.create(sinon.stub().returns(p(stubs.ch)))
+    var ex = exchange.create(stubs.chFactory)
       .configure('myExchange', 'direct', {})
       .publish('rk', {Hello:'World'})
       .then(function() {
@@ -48,7 +53,7 @@ suite('Exchange', function() {
   test('publish closes channel', function(done) {
     var stubs = build();
 
-    var ex = exchange.create(sinon.stub().returns(p(stubs.ch)))
+    var ex = exchange.create(stubs.chFactory)
       .publish('rk', {})
       .then(function() {
         assert(stubs.ch.close.calledOnce)
@@ -61,7 +66,7 @@ suite('Exchange', function() {
 
     var opts = { persistent: true };
 
-    var ex = exchange.create(sinon.stub().returns(p(stubs.ch)))
+    var ex = exchange.create(stubs.chFactory)
       .publish('rk', {}, opts)
       .then(function() {
         assert.equal(stubs.ch.publish.args[0][3], opts)
@@ -74,7 +79,7 @@ suite('Exchange', function() {
 
     var opts = {};
 
-    exchange.create(sinon.stub().returns(p(stubs.ch)))
+    exchange.create(stubs.chFactory)
       .configure('myExchange', 'direct', opts)
       .publish('rk', {})
       .then(function() {
@@ -86,7 +91,7 @@ suite('Exchange', function() {
   test('default options are set', function(done) {
     var stubs = build();
 
-    exchange.create(sinon.stub().returns(p(stubs.ch)))
+    exchange.create(stubs.chFactory)
       .publish('rk', {})
       .then(function() {
         assert(stubs.ch.assertExchange.calledWithExactly('', '', {}));

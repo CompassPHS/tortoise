@@ -2,9 +2,9 @@ var assert = require('chai').assert
   , sinon = require('sinon')
   , _ = require('lodash')
   , Promise = require('bluebird')
-  , amqp = require('amqplib')
   , exchange = require('../lib/exchange')
   , queue = require('../lib/queue')
+  , channelFactory = require('../lib/channelFactory')
   , Tortoise = require('../lib/tortoise');
 
 var fn = function() { };
@@ -16,20 +16,16 @@ var sandbox;
 
 function build() {
 
-  var conn = { close: fn, createChannel: fn }
-  var ch = { };
+  var chFactory = { get: fn, closeAll: fn }
 
-  // Default stubbing behavior
-  var closeStub = sandbox.spy(conn, 'close');
-  var connectStub = sandbox.stub(amqp, 'connect').returns(p(conn));
-  sandbox.stub(conn, 'createChannel').returns(p(ch));
+  var createStub = sandbox.stub(channelFactory, 'create').returns(chFactory);
+  var closeAllStub = sandbox.stub(chFactory, 'closeAll').returns(p());
+  var getStub = sandbox.stub(chFactory, 'get').returns(p({}));
 
   return {
-    amqp: {
-      connect: connectStub
-    },
-    conn: {
-      close: closeStub
+    chFactory: {
+      create: createStub,
+      closeAll: closeAllStub
     }
   }
 }
@@ -44,18 +40,19 @@ suite('Tortoise', function() {
     sandbox.restore();
   });
 
-  test('tortoise initiates connection', function() {
+  test('tortoise creates channel factory', function() {
     var stubs = build();
     var host = 'amqp://localhost';
-    var tortoise = new Tortoise(host);
-    assert(stubs.amqp.connect.calledWith(host));
+    var options = { setting: true };
+    var tortoise = new Tortoise(host, options);
+    assert(stubs.chFactory.create.calledWith(host, options));
   });
 
-  test('destroy closses connection', function(done) {
+  test('destroy closes connection(s)', function(done) {
     var stubs = build();
     var tortoise = new Tortoise('amqp://localhost');
     tortoise.destroy().then(function() {
-      assert(stubs.conn.close.calledOnce);
+      assert(stubs.chFactory.closeAll.calledOnce);
       done();
     });
   });
@@ -74,7 +71,7 @@ suite('Tortoise', function() {
     assert(createStub.calledOnce);
     assert(configureStub.calledWith('my-exchange', 'topic', { durable: true }));
 
-    createStub.args[0][0]().then(function(ch) {
+    createStub.args[0][0].get().then(function(ch) {
       assert.isTrue(_.isObject(ch))
       done();
     });
@@ -94,7 +91,7 @@ suite('Tortoise', function() {
     assert(createStub.calledOnce);
     assert(configureStub.calledWith('my-queue', { durable: true }));
 
-    createStub.args[0][0]().then(function(ch) {
+    createStub.args[0][0].get().then(function(ch) {
       assert.isTrue(_.isObject(ch))
       done();
     });
