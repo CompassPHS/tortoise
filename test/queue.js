@@ -43,7 +43,7 @@ function build() {
   }
 }
 
-suite('Queue', function() {
+suite('queue', function() {
 
   test('publish publishes message to provided queue', function(done) {
     var stubs = build();

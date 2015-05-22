@@ -2,8 +2,8 @@ var assert = require('chai').assert
   , sinon = require('sinon')
   , _ = require('lodash')
   , Promise = require('bluebird')
-  , amqp = require('amqplib')
-  , channelFactory = require('../lib/channelFactory')
+  , connectionPool = require('../lib/connectionPool')
+  , channelFactory = require('../lib/channelFactory');
 
 var fn = function() { };
 var p = function(v) {
@@ -15,15 +15,20 @@ var sandbox;
 function build() {
 
   var conn = { close: fn, createChannel: fn }
+  var connPool = { getNext: fn, getAll: fn }
 
   // Default stubbing behavior
+  var createStub = sandbox.stub(connectionPool, 'create').returns(connPool);
+  var getNextStub = sandbox.stub(connPool, 'getNext').returns(p(conn));
+  var getAllStub = sandbox.stub(connPool, 'getAll').returns([p(conn)]);
   var closeStub = sandbox.spy(conn, 'close');
-  var connectStub = sandbox.stub(amqp, 'connect').returns(p(conn));
   var createChannelStub = sandbox.stub(conn, 'createChannel');
 
   return {
-    amqp: {
-      connect: connectStub
+    connPool: {
+      create: createStub,
+      getNext: getNextStub,
+      getAll: getAllStub
     },
     conn: {
       close: closeStub,
@@ -32,7 +37,7 @@ function build() {
   }
 }
 
-suite('ChannelFactory', function() {
+suite('channelFactory', function() {
 
   beforeEach(function() {
     sandbox = sinon.sandbox.create();
@@ -45,9 +50,9 @@ suite('ChannelFactory', function() {
   test('channelFactory initiates connection', function() {
     var stubs = build();
     var host = 'amqp://localhost';
-    var options = { setting: true };
+    var options = { connectionPoolCount: _.random(1, 100) };
     var chFactory = channelFactory.create(host, options);
-    assert(stubs.amqp.connect.calledWith(host));
+    assert(stubs.connPool.create.calledWith(host, options.connectionPoolCount));
   });
 
   test('get creates a new channel', function(done) {

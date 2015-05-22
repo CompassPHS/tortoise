@@ -30,7 +30,7 @@ function build() {
   }
 }
 
-suite('Tortoise', function() {
+suite('tortoise', function() {
 
   beforeEach(function() {
     sandbox = sinon.sandbox.create();

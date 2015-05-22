@@ -31,7 +31,7 @@ function build() {
   }
 }
 
-suite('Exchange', function() {
+suite('exchange', function() {
 
   test('publish publishes message to provided exchange', function(done) {
     var stubs = build();

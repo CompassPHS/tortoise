@@ -14,7 +14,7 @@ A client library for interacting with AMQP. Work in progress.
 
   * The content/body of a message is expected to be an object literal (without functions) and will be serialized/deserialized by the library
 
-## Example
+## Basic Example
 
 ```javascript
 var Tortoise = require('tortoise')
@@ -35,12 +35,24 @@ setInterval(function() {
 }, 1000);
 ```
 
-## Setup
+## Basic Setup
 
 ```javascript
 var Tortoise = require('tortoise');
 var tortoise = new Tortoise('amqp://localhost');
 ```
+
+## Advanced Setup
+
+```javascript
+var Tortoise = require('tortoise');
+var options = { connectionPoolCount: 5 }
+var tortoise = new Tortoise('amqp://localhost', options);
+```
+
+`options` is optional. Current options are:
+
+  * `connectionPoolCount`: `Number` value greater than `0`. Defaults to `1`. Tortoise will round robin between provided number of connections when creating channels.
 
 ## Publishing to a queue
 
