@@ -1,25 +1,28 @@
 var assert = require('chai').assert
   , sinon = require('sinon')
+  , _ = require('lodash')
   , Promise = require('bluebird')
   , amqp = require('amqplib')
   , exchange = require('../lib/exchange')
   , queue = require('../lib/queue')
   , Tortoise = require('../lib/tortoise');
 
-var emptyFn = function() { };
-var quickPromise = function(returnValue) {
-  return new Promise(function(f) { f(returnValue); });
+var fn = function() { };
+var p = function(v) {
+  return new Promise(function(f) { f(v); });
 }
 
 var sandbox;
 
 function build() {
 
-  var conn = { close: emptyFn }
+  var conn = { close: fn, createChannel: fn }
+  var ch = { };
 
   // Default stubbing behavior
   var closeStub = sandbox.spy(conn, 'close');
-  var connectStub = sandbox.stub(amqp, 'connect').returns(quickPromise(conn));
+  var connectStub = sandbox.stub(amqp, 'connect').returns(p(conn));
+  sandbox.stub(conn, 'createChannel').returns(p(ch));
 
   return {
     amqp: {
@@ -57,10 +60,10 @@ suite('Tortoise', function() {
     });
   });
 
-  test('exchange creates and configures exchange', function() {
+  test('exchange creates and configures exchange', function(done) {
     var stubs = build();
 
-    var ex = { configure: emptyFn }
+    var ex = { configure: fn }
     var createStub = sandbox.stub(exchange, 'create').returns(ex);
     var configureStub = sandbox.stub(ex, 'configure').returns(ex);
 
@@ -70,12 +73,17 @@ suite('Tortoise', function() {
 
     assert(createStub.calledOnce);
     assert(configureStub.calledWith('my-exchange', 'topic', { durable: true }));
+
+    createStub.args[0][0]().then(function(ch) {
+      assert.isTrue(_.isObject(ch))
+      done();
+    });
   });
 
-  test('queue creates and configures queue', function() {
+  test('queue creates and configures queue', function(done) {
     var stubs = build();
 
-    var q = { configure: emptyFn }
+    var q = { configure: fn }
     var createStub = sandbox.stub(queue, 'create').returns(q);
     var configureStub = sandbox.stub(q, 'configure').returns(q);
 
@@ -85,6 +93,11 @@ suite('Tortoise', function() {
 
     assert(createStub.calledOnce);
     assert(configureStub.calledWith('my-queue', { durable: true }));
+
+    createStub.args[0][0]().then(function(ch) {
+      assert.isTrue(_.isObject(ch))
+      done();
+    });
   });
 
 })

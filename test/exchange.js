@@ -3,26 +3,21 @@ var assert = require('chai').assert
   , Promise = require('bluebird')
   , exchange = require('../lib/exchange');
 
-var emptyFn = function() { };
-var quickPromise = function(returnValue) {
-  return new Promise(function(f) { f(returnValue); });
+var fn = function() { };
+var p = function(v) {
+  return new Promise(function(f) { f(v); });
 }
 
 function build() {
 
-  var ch = { assertExchange: emptyFn, publish: emptyFn, close: emptyFn };
-  var conn = { createChannel: emptyFn };
+  var ch = { assertExchange: fn, publish: fn, close: fn };
 
   // Default stubbing behavior
-  var createChannelStub = sinon.stub(conn, 'createChannel').returns(quickPromise(ch));
-  var assertExchangeStub = sinon.stub(ch, 'assertExchange').returns(quickPromise());
+  var assertExchangeStub = sinon.stub(ch, 'assertExchange').returns(p());
   var publishStub = sinon.stub(ch, 'publish');
-  var closeStub = sinon.stub(ch, 'close').returns(quickPromise());
+  var closeStub = sinon.stub(ch, 'close').returns(p());
 
   return {
-    conn: {
-      createChannel: createChannelStub
-    },
     ch: {
       assertExchange: assertExchangeStub,
       publish: publishStub,
@@ -36,7 +31,7 @@ suite('Exchange', function() {
   test('publish publishes message to provided exchange', function(done) {
     var stubs = build();
 
-    var ex = exchange.create(quickPromise(stubs.conn))
+    var ex = exchange.create(sinon.stub().returns(p(stubs.ch)))
       .configure('myExchange', 'direct', {})
       .publish('rk', {Hello:'World'})
       .then(function() {
@@ -53,7 +48,7 @@ suite('Exchange', function() {
   test('publish closes channel', function(done) {
     var stubs = build();
 
-    var ex = exchange.create(quickPromise(stubs.conn))
+    var ex = exchange.create(sinon.stub().returns(p(stubs.ch)))
       .publish('rk', {})
       .then(function() {
         assert(stubs.ch.close.calledOnce)
@@ -66,7 +61,7 @@ suite('Exchange', function() {
 
     var opts = { persistent: true };
 
-    var ex = exchange.create(quickPromise(stubs.conn))
+    var ex = exchange.create(sinon.stub().returns(p(stubs.ch)))
       .publish('rk', {}, opts)
       .then(function() {
         assert.equal(stubs.ch.publish.args[0][3], opts)
@@ -79,7 +74,7 @@ suite('Exchange', function() {
 
     var opts = {};
 
-    exchange.create(quickPromise(stubs.conn))
+    exchange.create(sinon.stub().returns(p(stubs.ch)))
       .configure('myExchange', 'direct', opts)
       .publish('rk', {})
       .then(function() {
@@ -91,7 +86,7 @@ suite('Exchange', function() {
   test('default options are set', function(done) {
     var stubs = build();
 
-    exchange.create(quickPromise(stubs.conn))
+    exchange.create(sinon.stub().returns(p(stubs.ch)))
       .publish('rk', {})
       .then(function() {
         assert(stubs.ch.assertExchange.calledWithExactly('', '', {}));
