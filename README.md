@@ -22,6 +22,7 @@ var Tortoise = require('tortoise')
 
 tortoise
   .queue('my-queue')
+  .prefetch(1)
   .subscribe(function(msg, ack) {
     console.log(msg);
     ack();
@@ -54,7 +55,7 @@ tortoise
 ```javascript
 tortoise
   .exchange('my-exchange', 'direct', { durable:false })
-  .publish('routing-key', { Hello: 'World' });
+  .publish('routing.key', { Hello: 'World' });
 ```
 
 ## Subscribing to a queue
@@ -62,6 +63,7 @@ tortoise
 ```javascript
 tortoise
   .queue('my-queue', { durable: false })
+  .prefetch(1);
   .subscribe(function(msg, ack, nack) {
     // Handle
     ack(); // or nack();
@@ -71,7 +73,8 @@ tortoise
 ```javascript
 tortoise
   .queue('my-queue', { durable: false })
-  .exchange('my-exchange', 'direct', 'routing-key', { durable: false })
+  .exchange('my-exchange', 'direct', 'routing.key', { durable: false })
+  .prefetch(1)
   .subscribe(function(msg, ack, nack) {
     // Handle
     ack(); // or nack();
