@@ -149,6 +149,30 @@ suite('queue', function() {
         // Verify ack was called
         assert(stubs.ch.ack.calledOnce);
         assert.equal(stubs.ch.ack.args[0][0], message);
+        assert.equal(stubs.ch.ack.args[0][1], undefined);
+        assert.equal(stubs.ch.nack.callCount, 0);
+
+        done();
+      }).then(function() {
+        // Call handler code
+        var handler = stubs.ch.consume.args[0][1];
+        handler(message);
+      });
+  });
+
+  test('subscribe and ack with params acks message', function(done) {
+    var stubs = build();
+
+    var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+
+    queue.create(stubs.chFactory)
+      .subscribe(function(msg, ack) {
+        ack(true);
+
+        // Verify ack was called
+        assert(stubs.ch.ack.calledOnce);
+        assert.equal(stubs.ch.ack.args[0][0], message);
+        assert.equal(stubs.ch.ack.args[0][1], true);
         assert.equal(stubs.ch.nack.callCount, 0);
 
         done();
@@ -171,6 +195,32 @@ suite('queue', function() {
         // Verify nack was called
         assert(stubs.ch.nack.calledOnce);
         assert.equal(stubs.ch.nack.args[0][0], message);
+        assert.equal(stubs.ch.nack.args[0][1], undefined);
+        assert.equal(stubs.ch.nack.args[0][2], undefined);
+        assert.equal(stubs.ch.ack.callCount, 0);
+
+        done();
+      }).then(function() {
+        // Call handler code
+        var handler = stubs.ch.consume.args[0][1];
+        handler(message);
+      });
+  });
+
+  test('subscribe and nack with params nacks message', function(done) {
+    var stubs = build();
+
+    var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+    
+    queue.create(stubs.chFactory)
+      .subscribe(function(msg, ack, nack) {
+        nack(false, false);
+        
+        // Verify nack was called
+        assert(stubs.ch.nack.calledOnce);
+        assert.equal(stubs.ch.nack.args[0][0], message);
+        assert.equal(stubs.ch.nack.args[0][1], false);
+        assert.equal(stubs.ch.nack.args[0][2], false);
         assert.equal(stubs.ch.ack.callCount, 0);
 
         done();
