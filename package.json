@@ -14,7 +14,8 @@
   "dependencies": {
     "amqplib": "^0.3.2",
     "bluebird": "^2.9.25",
-    "lodash": "^3.8.0"
+    "lodash": "^3.8.0",
+    "moment": "^2.10.3"
   },
   "keywords": [
     "AMQP",
