@@ -34,10 +34,11 @@ suite('failHandler', function() {
 
   test('waits N seconds to invoke after threshold count', function(done) {
     var start = moment();
+    console.log(+start);
 
     var fHandler = failHandler.create({
       failThreshold: 3,
-      failTimeout: 500,
+      failTimeout: 50,
       retryTimeout: 25
     });
 
@@ -55,11 +56,12 @@ suite('failHandler', function() {
 
       setTimeout(function() {
         var start2 = moment();
+        console.log(+start2);
         fHandler.invoke(function() {
           assert.isBelow(moment().diff(start2), 10);
           done();
         });
-      }, 500);
+      }, 100);
     });
   });
 
