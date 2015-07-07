@@ -1,7 +1,7 @@
 {
   "name": "tortoise",
   "homepage": "https://github.com/CompassPHS/tortoise",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Client library for AMQP",
   "main": "index.js",
   "scripts": {
