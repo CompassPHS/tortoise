@@ -34,7 +34,6 @@ suite('failHandler', function() {
 
   test('waits N seconds to invoke after threshold count', function(done) {
     var start = moment();
-    console.log(+start);
 
     var fHandler = failHandler.create({
       failThreshold: 3,
@@ -56,7 +55,6 @@ suite('failHandler', function() {
 
       setTimeout(function() {
         var start2 = moment();
-        console.log(+start2);
         fHandler.invoke(function() {
           assert.isBelow(moment().diff(start2), 10);
           done();
