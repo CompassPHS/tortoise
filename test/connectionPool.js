@@ -28,6 +28,10 @@ suite('connectionPool', function() {
     var connectionPoolCount = _.random(5,100);
     var connPool = connectionPool.create(host, connectionPoolCount);
 
+    _.times(connectionPoolCount, function() {
+      connPool.getNext();
+    });
+
     assert(connectStub.alwaysCalledWithExactly(host));
     assert.equal(connectStub.callCount, connectionPoolCount);
   });
@@ -43,6 +47,10 @@ suite('connectionPool', function() {
     });
 
     var connPool = connectionPool.create(host, connectionPoolCount);
+
+    _.times(connectionPoolCount, function() {
+      connPool.getNext();
+    });
 
     Promise.all(_.map(_.range(connectionPoolCount * 2), function() { 
         return connPool.getNext() 
@@ -65,6 +73,10 @@ suite('connectionPool', function() {
     });
 
     var connPool = connectionPool.create(host, connectionPoolCount);
+
+    _.times(connectionPoolCount, function() {
+      connPool.getNext();
+    });
 
     Promise.all(connPool.getAll()).then(function(conns) {
       assert.equal(conns.length, connectionPoolCount);

@@ -1,7 +1,7 @@
 {
   "name": "tortoise",
   "homepage": "https://github.com/CompassPHS/tortoise",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Client library for AMQP",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,8 @@
   "dependencies": {
     "amqplib": "^0.3.2",
     "bluebird": "^2.9.25",
-    "lodash": "^3.8.0"
+    "lodash": "^3.8.0",
+    "moment": "^2.10.3"
   },
   "keywords": [
     "AMQP",
