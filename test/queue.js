@@ -261,10 +261,13 @@ suite('queue', function() {
     queue.create(stubs.chFactory)
       .configure('my-queue')
       .exchange('my-exchange', 'topic', 'routing.key', { durable: true })
+      .exchange('my-other-exchange', 'topic', 'other.routing.key', { durable: true })
       .subscribe(fn)
       .then(function() {
         assert(stubs.ch.assertExchange.calledWith('my-exchange', 'topic', { durable: true }));
+        assert(stubs.ch.assertExchange.calledWith('my-other-exchange', 'topic', { durable: true }));
         assert(stubs.ch.bindQueue.calledWith('my-queue', 'my-exchange', 'routing.key'));
+        assert(stubs.ch.bindQueue.calledWith('my-queue', 'my-other-exchange', 'other.routing.key'));
         done();
       });
   });

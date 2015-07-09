@@ -85,6 +85,7 @@ tortoise
 ```javascript
 tortoise
   .queue('my-queue', { durable: false })
+  // Add as many bindings as needed
   .exchange('my-exchange', 'direct', 'routing.key', { durable: false })
   .prefetch(1)
   .subscribe(function(msg, ack, nack) {
