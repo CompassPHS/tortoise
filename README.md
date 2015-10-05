@@ -133,7 +133,7 @@ This is useful if you subcribe to wildcard topics on an exchange but wanted to k
 
 ## Auto retrying and throttling
 
-There are a few methods available for controlling continuous failures, all are optional. `failTimeout` and `retryTimeout` do nothing if `failThreshold` is not set
+There are a few methods available for controlling continuous failures, all are optional. `failSpan` and `retryTimeout` do nothing if `failThreshold` is not set
 
 default behavior (not setting) of `failThreshold` is no failure handling
 
@@ -144,7 +144,7 @@ var Tortoise = require('tortoise')
 tortoise
   .queue('simple-queue', { durable: true })
   .failThreshold(3) // 3 immediate attempts
-  .failTimeout(1000 * 60 * 10) // 10 minutes, defaults to 1 minute
+  .failSpan(1000 * 60 * 10) // 10 minutes, defaults to 1 minute
   .retryTimeout(1000 * 10) // 10 second timeout on each retry, defaults to 5 seconds
   .subscribe(function(msg, ack, nack) {
     console.log(msg);

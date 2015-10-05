@@ -38,11 +38,11 @@ suite('failHandler', function() {
     var fHandler = failHandler.create({
       failThreshold: 3,
       failTimeout: 50,
-      retryTimeout: 25
+      retryTimeout: 50
     });
 
     fHandler.invoke(function() {
-      assert.isBelow(moment().diff(start), 10);
+      assert.isBelow(moment().diff(start), 25);
     });
 
     fHandler.failed();
@@ -50,13 +50,13 @@ suite('failHandler', function() {
     fHandler.failed();
 
     fHandler.invoke(function() {
-      assert.isAbove(moment().diff(start), 25);
+      assert.isAbove(moment().diff(start), 50);
       assert.isBelow(moment().diff(start), 100);
 
       setTimeout(function() {
         var start2 = moment();
         fHandler.invoke(function() {
-          assert.isBelow(moment().diff(start2), 10);
+          assert.isBelow(moment().diff(start2), 25);
           done();
         });
       }, 100);
