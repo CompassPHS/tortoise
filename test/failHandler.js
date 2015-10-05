@@ -9,7 +9,7 @@ suite('failHandler', function() {
 
     failHandler.create(opts);
 
-    assert.isDefined(opts.failTimeout);
+    assert.isDefined(opts.failSpan);
     assert.isDefined(opts.retryTimeout);
   });
 
@@ -19,17 +19,17 @@ suite('failHandler', function() {
 
     failHandler.extend(opts, instance);
 
-    assert.isFunction(instance.failTimeout);
+    assert.isFunction(instance.failSpan);
     assert.isFunction(instance.retryTimeout);
     assert.isFunction(instance.failThreshold);
 
     instance.failThreshold(10);
     instance.retryTimeout(1000);
-    instance.failTimeout(10000);
+    instance.failSpan(10000);
 
     assert.equal(opts.failThreshold, 10);
     assert.equal(opts.retryTimeout, 1000);
-    assert.equal(opts.failTimeout, 10000);
+    assert.equal(opts.failSpan, 10000);
   });
 
   test('waits N seconds to invoke after threshold count', function(done) {
@@ -37,7 +37,7 @@ suite('failHandler', function() {
 
     var fHandler = failHandler.create({
       failThreshold: 3,
-      failTimeout: 50,
+      failSpan: 50,
       retryTimeout: 50
     });
 
