@@ -151,3 +151,20 @@ tortoise
     nack();
   });
 ```
+
+## Automatic setup of dead letter exchange and queue
+
+If you wanted to setup your (subscribe) queue to automatically set a dead letter exchange:
+
+```javascript
+var Tortoise = require('tortoise')
+  , tortoise = new Tortoise('amqp://localhost');
+
+tortoise
+  .queue('simple-queue')
+  .dead('exchange.dead', 'queue.dead')
+  .subscribe(function(msg, ack, nack) {
+    // Do not requeue, instead shove to dead letter exchange
+    nack(false);
+  });
+```
