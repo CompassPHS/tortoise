@@ -267,13 +267,13 @@ suite('queue', function() {
     
     queue.create(stubs.chFactory)
       .subscribe(function(msg, ack, nack) {
-        nack(false, false);
+        nack(false);
         
         // Verify nack was called
         assert(stubs.ch.nack.calledOnce);
         assert.equal(stubs.ch.nack.args[0][0], message);
-        assert.equal(stubs.ch.nack.args[0][1], false);
         assert.equal(stubs.ch.nack.args[0][2], false);
+        assert.equal(stubs.ch.nack.args[0][1], undefined);
         assert.equal(stubs.ch.ack.callCount, 0);
 
         done();
