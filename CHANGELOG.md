@@ -1,4 +1,4 @@
-### v0.2.0 (2015-10-08)
+### [v0.2.0](https://github.com/CompassPHS/tortoise/compare/v0.1.14...v0.2.0) (2015-10-08)
 
 #### Features
 
