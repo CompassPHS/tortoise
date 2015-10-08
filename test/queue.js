@@ -111,6 +111,59 @@ suite('queue', function() {
       });
   });
 
+  test('dead letter configure with no options configures dead letter queue', function(done) {
+    var stubs = build();
+
+    var queueOpts = {
+      arguments: {
+        'x-dead-letter-exchange': 'dead.exchange'
+      }
+    };
+
+    var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+
+    queue.create(stubs.chFactory)
+      .configure('myQueue')
+      .dead('dead.exchange', 'dead.queue')
+      .subscribe(function(msg, ack) {
+        ack();
+      }).then(function() {
+        // Verify setup
+        assert(stubs.ch.assertQueue.calledWithExactly('myQueue', queueOpts));
+        assert(stubs.ch.assertQueue.calledWithExactly('dead.queue', {}));
+        assert(stubs.ch.assertExchange.calledWithExactly('dead.exchange', 'topic', {}));
+        done();
+      });
+  })
+
+  test('dead letter configure with options configures dead letter queue', function(done) {
+    var stubs = build();
+
+    var queueOpts = {
+      arguments: {
+        'x-dead-letter-exchange': 'dead.exchange'
+      }
+    };
+    var bindingOpts = {testA:'testA'};
+    var exchangeQueueOpts = {testB:'testB'}
+
+    var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+
+    queue.create(stubs.chFactory)
+      .configure('myQueue')
+      .dead('dead.exchange', bindingOpts, 'dead.queue', exchangeQueueOpts)
+      .subscribe(function(msg, ack) {
+        ack();
+      }).then(function() {
+        // Verify setup
+        assert(stubs.ch.assertQueue.calledWithExactly('myQueue', queueOpts));
+        assert(stubs.ch.assertQueue.calledWithExactly('dead.queue', exchangeQueueOpts));
+        assert(stubs.ch.assertExchange.calledWithExactly('dead.exchange', 'topic', bindingOpts));
+        assert(stubs.ch.bindQueue.calledWithExactly('dead.queue', 'dead.exchange', '#'));
+        done();
+      });
+  })
+
   test('subscribe to queue calls handler on message received', function(done) {
     var stubs = build();
 
