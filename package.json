@@ -12,8 +12,8 @@
     "url": "https://github.com/CompassPHS/tortoise.git"
   },
   "dependencies": {
-    "amqplib": "^0.3.2",
-    "bluebird": "^2.9.25",
+    "amqplib": "^0.4.0",
+    "bluebird": "^3.0.5",
     "lodash": "^3.8.0",
     "moment": "^2.10.3"
   },
