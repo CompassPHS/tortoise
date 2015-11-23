@@ -1,3 +1,15 @@
+### [v0.3.2](https://github.com/CompassPHS/tortoise/compare/v0.3.1...v0.3.2) (2015-11-23)
+
+#### Updates
+
+* Changed `.dead` method to allow for optional queue name. Only the name of the exchange is required
+
+### [v0.3.1](https://github.com/CompassPHS/tortoise/compare/v0.3.0...v0.3.1) (2015-11-23)
+
+#### Fixes
+
+* Fixed **close** method on subscribe throwing error
+
 ### [v0.3.0](https://github.com/CompassPHS/tortoise/compare/v0.2.0...v0.3.0) (2015-11-17)
 
 #### Updates
