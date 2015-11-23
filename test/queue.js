@@ -362,4 +362,19 @@ suite('queue', function() {
       });
   });
 
+  test('setup configures and closes channel', function(done) {
+    var stubs = build();
+    queue.create(stubs.chFactory)
+      .configure('my-queue')
+      .exchange('my-exchange', 'topic', 'routing.key', { durable: true })
+      .setup()
+      .then(function() {
+        assert(stubs.ch.assertExchange.calledWith('my-exchange', 'topic', { durable: true }));
+        assert(stubs.ch.bindQueue.calledWith('my-queue', 'my-exchange', 'routing.key'));
+        assert(stubs.ch.close.calledOnce);
+        assert(stubs.ch.consume.callCount === 0);
+        done();
+      });
+  });
+
 });

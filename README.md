@@ -182,3 +182,19 @@ tortoise
     nack(false);
   });
 ```
+
+## Configuring without the need to subscribe or publish
+
+The `.setup` method will call all asserts and bindings then close the channel
+
+```javascript
+tortoise
+  .queue('myQueue')
+  .exchange('myExchange', 'topic', '#')
+  .dead('myDeadExchange')
+  .setup();
+
+tortoise
+  .exchange('myExchange', 'topic')
+  .setup();
+```

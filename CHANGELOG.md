@@ -1,3 +1,9 @@
+### [v0.3.4](https://github.com/CompassPHS/tortoise/compare/v0.3.3...v0.3.4) (2015-11-23)
+
+#### Updates
+
+* Added `.setup` method to replace `.subscribe` or `.publish` and execute all queue asserts and bindings
+
 ### [v0.3.3](https://github.com/CompassPHS/tortoise/compare/v0.3.2...v0.3.3) (2015-11-23)
 
 #### Fixes

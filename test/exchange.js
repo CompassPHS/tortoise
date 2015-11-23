@@ -99,4 +99,18 @@ suite('exchange', function() {
       });
   });
 
+  test('setup configures and closes channel', function(done) {
+    var stubs = build();
+
+    var ex = exchange.create(stubs.chFactory)
+      .configure('myExchange', 'direct', {})
+      .setup()
+      .then(function() {
+        assert(stubs.ch.assertExchange.calledWithExactly('myExchange', 'direct', {}));
+        assert(stubs.ch.close.calledOnce);
+        done();
+      });
+
+  });
+
 });
