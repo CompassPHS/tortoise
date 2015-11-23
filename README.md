@@ -168,3 +168,17 @@ tortoise
     nack(false);
   });
 ```
+
+Declaring the queue to bind to the exchange is optional. It is perfectly acceptable to setup like this:
+```javascript
+var Tortoise = require('tortoise')
+  , tortoise = new Tortoise('amqp://localhost');
+
+tortoise
+  .queue('simple-queue')
+  .dead('exchange.dead')
+  .subscribe(function(msg, ack, nack) {
+    // Do not requeue, instead shove to dead letter exchange
+    nack(false);
+  });
+```
