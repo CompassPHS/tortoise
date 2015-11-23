@@ -1,3 +1,9 @@
+### [v0.3.3](https://github.com/CompassPHS/tortoise/compare/v0.3.2...v0.3.3) (2015-11-23)
+
+#### Fixes
+
+* Fixed **close** to actually close... (facepalm)
+
 ### [v0.3.2](https://github.com/CompassPHS/tortoise/compare/v0.3.1...v0.3.2) (2015-11-23)
 
 #### Updates
