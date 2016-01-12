@@ -21,12 +21,12 @@ suite('connectionPool', function() {
     sandbox.restore();
   });
 
-  test('connectionPool creates N number of connections', function() {
+  test('creates N number of connections', function() {
     var connectStub = sandbox.stub(amqp, 'connect').returns(p());
 
     var host = 'amqp://localhost';
     var connectionPoolCount = _.random(5,100);
-    var connPool = connectionPool.create(host, connectionPoolCount);
+    var connPool = connectionPool.create(host, { connectionPoolCount: connectionPoolCount });
 
     _.times(connectionPoolCount, function() {
       connPool.getNext();
@@ -46,7 +46,7 @@ suite('connectionPool', function() {
       connectStub.onCall(i).returns(p({id:i}));
     });
 
-    var connPool = connectionPool.create(host, connectionPoolCount);
+    var connPool = connectionPool.create(host, { connectionPoolCount: connectionPoolCount });
 
     _.times(connectionPoolCount, function() {
       connPool.getNext();
@@ -63,7 +63,7 @@ suite('connectionPool', function() {
   });
 
   test('getAll returns all connection promises', function(done) {
-    var connectStub = sandbox.stub(amqp, 'connect');
+    var connectStub = sandbox.stub(amqp, 'connect').returns(p());
 
     var host = 'amqp://localhost';
     var connectionPoolCount = _.random(5,100);
@@ -72,7 +72,7 @@ suite('connectionPool', function() {
       connectStub.onCall(i).returns(p({id:i}));
     });
 
-    var connPool = connectionPool.create(host, connectionPoolCount);
+    var connPool = connectionPool.create(host, { connectionPoolCount: connectionPoolCount });
 
     _.times(connectionPoolCount, function() {
       connPool.getNext();
@@ -81,6 +81,27 @@ suite('connectionPool', function() {
     Promise.all(connPool.getAll()).then(function(conns) {
       assert.equal(conns.length, connectionPoolCount);
       assert.equal(_.uniq(_.pluck(conns, 'id')).length, connectionPoolCount);
+      done();
+    });
+  });
+
+  test('retries specified number of times', function(done) {
+    sandbox.spy(Promise, 'delay');
+    var connectStub = sandbox.stub(amqp, 'connect', function() {
+      return Promise.reject({ code: 'ECONNREFUSED' });
+    });
+
+    var host = 'amqp://localhost';
+    var options = {
+      connectRetries: 10,
+      connectRetryInterval: 1,
+      connectionPoolCount: 1
+    }
+    var connPool = connectionPool.create(host, options);
+
+    connPool.getNext().catch(function(err) {
+      assert(Promise.delay.calledWithExactly(options.connectRetryInterval));
+      assert.equal(connectStub.callCount, options.connectRetries);
       done();
     });
   });
