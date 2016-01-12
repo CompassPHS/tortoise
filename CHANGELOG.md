@@ -1,3 +1,9 @@
+### [v0.4.0](https://github.com/CompassPHS/tortoise/compare/v0.3.3...v0.4.0) (2016-01-12)
+
+#### Updates
+
+* Added `connectRetries` and `connectRetryInterval` options and functionality
+
 ### [v0.3.4](https://github.com/CompassPHS/tortoise/compare/v0.3.3...v0.3.4) (2015-11-23)
 
 #### Updates

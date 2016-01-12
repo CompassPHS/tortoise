@@ -52,7 +52,7 @@ suite('channelFactory', function() {
     var host = 'amqp://localhost';
     var options = { connectionPoolCount: _.random(1, 100) };
     var chFactory = channelFactory.create(host, options);
-    assert(stubs.connPool.create.calledWith(host, options.connectionPoolCount));
+    assert(stubs.connPool.create.calledWith(host, options));
   });
 
   test('get creates a new channel', function(done) {
