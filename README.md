@@ -46,7 +46,11 @@ var tortoise = new Tortoise('amqp://localhost');
 
 ```javascript
 var Tortoise = require('tortoise');
-var options = { connectionPoolCount: 5 }
+var options = {
+  connectionPoolCount: 5,
+  connectRetries: -1,
+  connectRetryInterval: 1000
+};
 var tortoise = new Tortoise('amqp://localhost', options);
 ```
 
