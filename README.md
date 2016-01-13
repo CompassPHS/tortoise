@@ -10,6 +10,19 @@
 
 A client library for interacting with AMQP. Work in progress.
 
+- [Notes](#)
+- [Basic Example](#)
+- [Basic Setup](#)
+- [Advanced Setup](#)
+- [Publishing to a queue](#)
+- [Publishing to an exchange](#)
+- [Subscribing to a queue](#)
+- [Accessing message data](#)
+- [Auto retrying and throttling](#)
+- [Automatic setup of dead letter exchange and queue](#)
+- [Configuring without the need to subscribe or publish](#)
+- [Handling connection or channel closure](#)
+
 ## Notes
 
   * The content/body of a message is expected to be an object literal (without functions) and will be serialized/deserialized by the library
