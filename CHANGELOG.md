@@ -1,3 +1,9 @@
+### [v0.5.1](https://github.com/CompassPHS/tortoise/compare/v0.5.0...v0.5.1) (2016-01-12)
+
+#### Updates
+
+* Changed `amqlib` version back to `^0.4.0`. Oops.
+
 ### [v0.5.0](https://github.com/CompassPHS/tortoise/compare/v0.4.0...v0.5.0) (2016-01-12)
 
 #### Updates
