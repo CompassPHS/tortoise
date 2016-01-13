@@ -2,7 +2,7 @@ var assert = require('chai').assert
   , sinon = require('sinon')
   , _ = require('lodash')
   , Promise = require('bluebird')
-  , connectionPool = require('../lib/connectionPool')
+  , connectionFactory = require('../lib/connectionFactory')
   , channelFactory = require('../lib/channelFactory');
 
 var fn = function() { };
@@ -15,20 +15,18 @@ var sandbox;
 function build() {
 
   var conn = { close: fn, createChannel: fn }
-  var connPool = { getNext: fn, getAll: fn }
+  var connFactory = { get: fn }
 
   // Default stubbing behavior
-  var createStub = sandbox.stub(connectionPool, 'create').returns(connPool);
-  var getNextStub = sandbox.stub(connPool, 'getNext').returns(p(conn));
-  var getAllStub = sandbox.stub(connPool, 'getAll').returns([p(conn)]);
+  var createStub = sandbox.stub(connectionFactory, 'create').returns(connFactory);
+  var getStub = sandbox.stub(connFactory, 'get').returns(p(conn));
   var closeStub = sandbox.spy(conn, 'close');
   var createChannelStub = sandbox.stub(conn, 'createChannel');
 
   return {
-    connPool: {
+    connFactory: {
       create: createStub,
-      getNext: getNextStub,
-      getAll: getAllStub
+      getStub: getStub
     },
     conn: {
       close: closeStub,
@@ -50,9 +48,9 @@ suite('channelFactory', function() {
   test('channelFactory initiates connection', function() {
     var stubs = build();
     var host = 'amqp://localhost';
-    var options = { connectionPoolCount: _.random(1, 100) };
+    var options = { };
     var chFactory = channelFactory.create(host, options);
-    assert(stubs.connPool.create.calledWith(host, options));
+    assert(stubs.connFactory.create.calledWith(host, options));
   });
 
   test('get creates a new channel', function(done) {
@@ -73,11 +71,11 @@ suite('channelFactory', function() {
     });
   });
 
-  test('closeAll closes connection', function(done) {
+  test('close closes connection', function(done) {
     var stubs = build();
     var host = 'amqp://localhost';
     var chFactory = channelFactory.create(host);
-    chFactory.closeAll().then(function() {
+    chFactory.close().then(function() {
       assert(stubs.conn.close.calledOnce);
       done();
     });

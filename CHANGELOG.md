@@ -1,3 +1,13 @@
+### [v0.5.0](https://github.com/CompassPHS/tortoise/compare/v0.4.0...v0.5.0) (2016-01-12)
+
+#### Updates
+
+* `.subscribe()` promise returns actual channel object, allowing for `close` event to be registered.
+
+#### Breaking Changes
+
+* `connectionPoolCount` option is removed. Tortoise no longer pools connections. This was removed because the need was not warranted.
+
 ### [v0.4.0](https://github.com/CompassPHS/tortoise/compare/v0.3.4...v0.4.0) (2016-01-12)
 
 #### Updates

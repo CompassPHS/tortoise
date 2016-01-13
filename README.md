@@ -47,7 +47,6 @@ var tortoise = new Tortoise('amqp://localhost');
 ```javascript
 var Tortoise = require('tortoise');
 var options = {
-  connectionPoolCount: 5,
   connectRetries: -1,
   connectRetryInterval: 1000
 };
@@ -56,7 +55,6 @@ var tortoise = new Tortoise('amqp://localhost', options);
 
 `options` is optional. Current options are:
 
-  * `connectionPoolCount`: `Number` value greater than `0`. Defaults to `1`. Tortoise will round robin between provided number of connections when creating channels.
   * `connectRetries`: `Number` value greater than or equal to `-1`. Defaults to `0`. Tortoise will attempt to connect up to this number. When set to `-1`, tortoise will attempt to connect forever. Note: This does not handle connections that have already been established and were lost.
   * `connectRetryInterval`: `Number` value greater than or equal to `0`. Defaults to `1000`. This is the amount of time, in `ms`, that tortoise will wait before attempting to connect again.
 
@@ -204,4 +202,28 @@ tortoise
 tortoise
   .exchange('myExchange', 'topic')
   .setup();
+```
+
+## Handling connection or channel closure
+
+When subscribing, the promise returned from `.subscribe()` resolves with a channel object that can be listened on. 
+
+The following is an example of listening for `close` events and resubscribing.
+
+```javascript
+// Wrap subscription inside function
+var subscribe = function() {
+  tortoise
+    .queue('myQueue')
+    .subscribe(function(msg, ack, nack) {
+      ack();
+    })
+    .then(function(ch) {
+      // Once connection is closed, immediately attempt to subscribe again
+      ch.on('close', subscribe);
+    })
+}
+
+// Start subscribing
+subscribe();
 ```
