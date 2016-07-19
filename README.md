@@ -10,18 +10,18 @@
 
 A client library for interacting with AMQP. Work in progress.
 
-- [Notes](#)
-- [Basic Example](#)
-- [Basic Setup](#)
-- [Advanced Setup](#)
-- [Publishing to a queue](#)
-- [Publishing to an exchange](#)
-- [Subscribing to a queue](#)
-- [Accessing message data](#)
-- [Auto retrying and throttling](#)
-- [Automatic setup of dead letter exchange and queue](#)
-- [Configuring without the need to subscribe or publish](#)
-- [Handling connection or channel closure](#)
+- [Notes](#notes)
+- [Basic Example](#basic-example)
+- [Basic Setup](#basic-setup)
+- [Advanced Setup](#advanced-setup)
+- [Publishing to a queue](#publishing-to-a-queue)
+- [Publishing to an exchange](#publishing-to-an-exchange)
+- [Subscribing to a queue](#subscribing-to-a-queue)
+- [Accessing message data](#accessing-message-data)
+- [Auto retrying and throttling](#auto-retrying-and-throttling)
+- [Automatic setup of dead letter exchange and queue](#automatic-setup-of-dead-letter-exchange-and-queue)
+- [Configuring without the need to subscribe or publish](#configuring-without-the-need-to-subscribe-or-publish)
+- [Handling connection or channel closure](#handling-connection-or-channel-closure)
 
 ## Notes
 
