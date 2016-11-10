@@ -1,7 +1,8 @@
 var assert = require('chai').assert
   , sinon = require('sinon')
   , Promise = require('bluebird')
-  , queue = require('../lib/queue');
+  , queue = require('../lib/queue')
+  , errors = require('../lib/errors');
 
 var fn = function() { };
 var p = function(v) {
@@ -194,6 +195,7 @@ suite('queue', function() {
     var stubs = build();
 
     queue.create(stubs.chFactory)
+      .json()
       .subscribe(function(msg) {
         assert.equal(msg.Hello, 'World');
         done();
@@ -374,6 +376,34 @@ suite('queue', function() {
         assert(stubs.ch.close.calledOnce);
         assert(stubs.ch.consume.callCount === 0);
         done();
+      });
+  });
+
+  test('subscribe with .json() will nack(requeue=false) and emit event when json is invalid', function(done) {
+    var stubs = build();
+
+    var message = {content:new Buffer('message')};
+
+    var EventEmitter = require('events').EventEmitter;
+    var eventEmitter = new EventEmitter();
+
+    eventEmitter.on(errors.PARSE, function() {
+      assert(stubs.ch.nack.calledOnce);
+      assert.equal(stubs.ch.nack.args[0][0], message);
+      assert.equal(stubs.ch.nack.args[0][2], false);
+      assert.equal(stubs.ch.nack.args[0][1], false);
+      assert.equal(stubs.ch.ack.callCount, 0);
+      done();
+    });
+    
+    queue.create(stubs.chFactory, eventEmitter)
+      .json()
+      .subscribe(function(msg, ack, nack) {
+
+      }).then(function() {
+        // Call handler code
+        var handler = stubs.ch.consume.args[0][1];
+        handler(message);
       });
   });
 
