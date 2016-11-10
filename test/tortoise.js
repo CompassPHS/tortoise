@@ -16,16 +16,16 @@ var sandbox;
 
 function build() {
 
-  var chFactory = { get: fn, closeAll: fn }
+  var chFactory = { get: fn, close: fn }
 
   var createStub = sandbox.stub(channelFactory, 'create').returns(chFactory);
-  var closeAllStub = sandbox.stub(chFactory, 'closeAll').returns(p());
+  var closeStub = sandbox.stub(chFactory, 'close').returns(p());
   var getStub = sandbox.stub(chFactory, 'get').returns(p({}));
 
   return {
     chFactory: {
       create: createStub,
-      closeAll: closeAllStub
+      close: closeStub
     }
   }
 }
@@ -52,7 +52,7 @@ suite('tortoise', function() {
     var stubs = build();
     var tortoise = new Tortoise('amqp://localhost');
     tortoise.destroy().then(function() {
-      assert(stubs.chFactory.closeAll.calledOnce);
+      assert(stubs.chFactory.close.calledOnce);
       done();
     });
   });
