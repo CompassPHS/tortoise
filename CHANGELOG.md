@@ -1,3 +1,15 @@
+### [v1.0.0](https://github.com/CompassPHS/tortoise/compare/v0.5.1...v1.0.0) (2016-11-11)
+
+#### Updates
+
+* Added optional `.json()` configuration method to subscription.
+* Added optional `.reestablish()` configuration method to subscription.
+
+#### Breaking Changes
+
+* Prior to `v1.0.0`, publish and subscribe would automatically serialize/deserialize the messages, assuming they were all objects/JSON. Now the publish is smart and will only serialize if it is an object. Also, `.json()` is required to deserialize messages.
+* `connectRetries` option is now defaulted to `-1`.
+
 ### [v0.5.1](https://github.com/CompassPHS/tortoise/compare/v0.5.0...v0.5.1) (2016-01-12)
 
 #### Updates
