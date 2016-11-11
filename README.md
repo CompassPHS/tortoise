@@ -17,7 +17,7 @@ A client library for interacting with AMQP.
 - [Publishing to an exchange](#publishing-to-an-exchange)
 - [Subscribing to a queue](#subscribing-to-a-queue)
 - [Accessing message data](#accessing-message-data)
-- [Handling Errors](#handling-errors)
+- [Handling Errors and Events](#handling-errors-and-events)
 - [Auto retrying and throttling](#auto-retrying-and-throttling)
 - [Automatic setup of dead letter exchange and queue](#automatic-setup-of-dead-letter-exchange-and-queue)
 - [Configuring without the need to subscribe or publish](#configuring-without-the-need-to-subscribe-or-publish)
@@ -109,7 +109,7 @@ tortoise
 ```
 
 ##### Automatically parsing JSON
-There is an optional function setting that will automatically attempt to parse messages from JSON (using `JSON.parse`) and if invalid, will `nack(requeue=false)` the message. To capture this event each time it occurs, you can subscribe to your tortoise instance for event `Tortoise.ERRORS.PARSE`:
+There is an optional function setting that will automatically attempt to parse messages from JSON (using `JSON.parse`) and if invalid, will `nack(requeue=false)` the message. To capture this event each time it occurs, you can subscribe to your tortoise instance for event `Tortoise.EVENTS.PARSEERROR`:
 ```javascript
 var Tortoise = require('tortoise');
 var tortoise = new Tortoise('amqp://localhost');
@@ -123,7 +123,7 @@ tortoise
     ack(); // or nack();
   });
   
- tortoise.on(Tortoise.ERRORS.PARSE, function(err, msg) {
+ tortoise.on(Tortoise.EVENTS.PARSEERROR, function(err, msg) {
     // err is the error
     // msg is the message object returned from AMQP.
     // msg.content is the Buffer of the message
@@ -168,23 +168,25 @@ tortoise
 
 This is useful if you subcribe to wildcard topics on an exchange but wanted to know what the actual topic (`routingKey`) was.
 
-## Handling Errors
+## Handling Errors and Events
 
 Tortoise will emit events when certain things occur. The following events are emitted:
 ```javascript
 {
-    PARSE: 'TORTOISE.PARSEERROR'
+    PARSEERROR: 'TORTOISE.PARSEERROR',
+    CONNECTIONCLOSED: 'TORTOISE.CONNECTIONCLOSED',
+    CONNECTIONDISCONNECTED: 'TORTOISE.CONNECTIONDISCONNECTED'
 }
 ```
 
-These error strings are accessed by the `ERRORS` property on the `Tortoise` library, and can be subscribed to on an individual tortoise instance. Here is an example of being notified when a parse error occurred:
+These event strings are accessed by the `EVENTS` property on the `Tortoise` library, and can be subscribed to on an individual tortoise instance. Here is an example of being notified when a parse error occurred:
 
 ```javascript
 var Tortoise = require('tortoise');
 var tortoise = new Tortoise('amqp://localhost');
 // Do your tortoise configuration
 
-tortoise.on(Tortoise.ERRORS.PARSE, function() {
+tortoise.on(Tortoise.EVENTS.PARSEERROR, function() {
     // Called on parse error
 });
 ```

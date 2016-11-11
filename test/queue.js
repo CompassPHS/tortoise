@@ -2,7 +2,7 @@ var assert = require('chai').assert
   , sinon = require('sinon')
   , Promise = require('bluebird')
   , queue = require('../lib/queue')
-  , errors = require('../lib/errors');
+  , events = require('../lib/events');
 
 var fn = function() { };
 var p = function(v) {
@@ -387,7 +387,7 @@ suite('queue', function() {
     var EventEmitter = require('events').EventEmitter;
     var eventEmitter = new EventEmitter();
 
-    eventEmitter.on(errors.PARSE, function() {
+    eventEmitter.on(events.PARSEERROR, function() {
       assert(stubs.ch.nack.calledOnce);
       assert.equal(stubs.ch.nack.args[0][0], message);
       assert.equal(stubs.ch.nack.args[0][2], false);
