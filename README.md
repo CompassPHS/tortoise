@@ -17,7 +17,7 @@ A client library for interacting with AMQP.
 - [Publishing to an exchange](#publishing-to-an-exchange)
 - [Subscribing to a queue](#subscribing-to-a-queue)
 - [Accessing message data](#accessing-message-data)
-- [Handling Errors](#handling-errors)
+- [Handling Errors and Events](#handling-errors-and-events)
 - [Auto retrying and throttling](#auto-retrying-and-throttling)
 - [Automatic setup of dead letter exchange and queue](#automatic-setup-of-dead-letter-exchange-and-queue)
 - [Configuring without the need to subscribe or publish](#configuring-without-the-need-to-subscribe-or-publish)
@@ -64,7 +64,7 @@ var tortoise = new Tortoise('amqp://localhost', options);
 
 `options` is optional. Current options are:
 
-  * `connectRetries`: `Number` value greater than or equal to `-1`. Defaults to `0`. Tortoise will attempt to connect up to this number. When set to `-1`, tortoise will attempt to connect forever. Note: This does not handle connections that have already been established and were lost.
+  * `connectRetries`: `Number` value greater than or equal to `-1`. Defaults to `-1`. Tortoise will attempt to connect up to this number. When set to `-1`, tortoise will attempt to connect forever. Note: This does not handle connections that have already been established and were lost see [Handling connection or channel closure](#handling-connection-or-channel-closure) for more information on that.
   * `connectRetryInterval`: `Number` value greater than or equal to `0`. Defaults to `1000`. This is the amount of time, in `ms`, that tortoise will wait before attempting to connect again.
 
 
@@ -109,7 +109,7 @@ tortoise
 ```
 
 ##### Automatically parsing JSON
-There is an optional function setting that will automatically attempt to parse messages from JSON (using `JSON.parse`) and if invalid, will `nack(requeue=false)` the message. To capture this event each time it occurs, you can subscribe to your tortoise instance for event `Tortoise.ERRORS.PARSE`:
+There is an optional function setting that will automatically attempt to parse messages from JSON (using `JSON.parse`) and if invalid, will `nack(requeue=false)` the message. To capture this event each time it occurs, you can subscribe to your tortoise instance for event `Tortoise.EVENTS.PARSEERROR`:
 ```javascript
 var Tortoise = require('tortoise');
 var tortoise = new Tortoise('amqp://localhost');
@@ -123,7 +123,7 @@ tortoise
     ack(); // or nack();
   });
   
- tortoise.on(Tortoise.ERRORS.PARSE, function(err, msg) {
+ tortoise.on(Tortoise.EVENTS.PARSEERROR, function(err, msg) {
     // err is the error
     // msg is the message object returned from AMQP.
     // msg.content is the Buffer of the message
@@ -168,23 +168,25 @@ tortoise
 
 This is useful if you subcribe to wildcard topics on an exchange but wanted to know what the actual topic (`routingKey`) was.
 
-## Handling Errors
+## Handling Errors and Events
 
 Tortoise will emit events when certain things occur. The following events are emitted:
 ```javascript
 {
-    PARSE: 'TORTOISE.PARSEERROR'
+    PARSEERROR: 'TORTOISE.PARSEERROR',
+    CONNECTIONCLOSED: 'TORTOISE.CONNECTIONCLOSED',
+    CONNECTIONDISCONNECTED: 'TORTOISE.CONNECTIONDISCONNECTED'
 }
 ```
 
-These error strings are accessed by the `ERRORS` property on the `Tortoise` library, and can be subscribed to on an individual tortoise instance. Here is an example of being notified when a parse error occurred:
+These event strings are accessed by the `EVENTS` property on the `Tortoise` library, and can be subscribed to on an individual tortoise instance. Here is an example of being notified when a parse error occurred:
 
 ```javascript
 var Tortoise = require('tortoise');
 var tortoise = new Tortoise('amqp://localhost');
 // Do your tortoise configuration
 
-tortoise.on(Tortoise.ERRORS.PARSE, function() {
+tortoise.on(Tortoise.EVENTS.PARSEERROR, function() {
     // Called on parse error
 });
 ```
@@ -258,6 +260,36 @@ tortoise
 ```
 
 ## Handling connection or channel closure
+
+##### Automatic Method
+
+There exists a helper method, `.reestablish()`, to re-establish connections that were lost (when subscribing). It will attempt re-establish the connection and, when successful, will be configured with the same settings as before (queue, exchanges, etc). One caveat with this method is the `.then()` resolution from the `.subscribe()` method will no longer function after the connection is lost. In most cases that is not a problem.
+
+It should be noted that this will begin consuming the `connectRetries` limit. See [Advanced Setup](#advanced-setup) for more information.
+
+Here is an example:
+```javascript
+var Tortoise = require('tortoise');
+var tortoise = new Tortoise('amqp://localhost', { connectRetries: -1 });
+
+tortoise
+  .queue('myQueue')
+  .reestablish()
+  .subscribe(function(msg, ack, nack) {
+    console.log('message received', msg);
+    ack();
+  })
+  .then(function(ch) {
+    // This will only be called once the original channel closes, not for any new channels created
+    ch.on('close', function() {
+      console.log('channel closed');
+    });
+  });
+```
+
+If you would still like to know (for logging, etc) when a connection is closed, see the [Handling Errors and Events](#handling-errors-and-events) section for subscribing to connection events.
+
+##### Manual Method
 
 When subscribing, the promise returned from `.subscribe()` resolves with a channel object that can be listened on. 
 
