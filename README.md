@@ -261,6 +261,36 @@ tortoise
 
 ## Handling connection or channel closure
 
+##### Automatic Method
+
+There exists a helper method, `.reestablish()`, to re-establish connections that were lost (when subscribing). It will attempt re-establish the connection and, when successful, will be configured with the same settings as before (queue, exchanges, etc). One caveat with this method is the `.then()` resolution from the `.subscribe()` method will no longer function after the connection is lost. In most cases that is not a problem.
+
+It should be noted that it would be a good idea to also configure tortoise initially with `connectRetries` property set to `-1` (as noted in the [Advanced Setup](#advanced-setup)), or else the connection will not be re-established and an error will be thrown.
+
+Here is an example:
+```javascript
+var Tortoise = require('tortoise');
+var tortoise = new Tortoise('amqp://localhost', { connectRetries: -1 });
+
+tortoise
+  .queue('myQueue')
+  .reestablish()
+  .subscribe(function(msg, ack, nack) {
+    console.log('message received', msg);
+    ack();
+  })
+  .then(function(ch) {
+    // This will only be called once the original channel closes, not for any new channels created
+    ch.on('close', function() {
+      console.log('channel closed');
+    });
+  });
+```
+
+If you would still like to know (for logging, etc) when a connection is closed, see the [Handling Errors and Events](#handling-errors-and-events) section for subscribing to connection events.
+
+##### Manual Method
+
 When subscribing, the promise returned from `.subscribe()` resolves with a channel object that can be listened on. 
 
 The following is an example of listening for `close` events and resubscribing.

@@ -11,7 +11,7 @@ var p = function(v) {
 
 function build() {
 
-  var ch = { prefetch: fn, nack: fn, ack: fn, bindQueue: fn, consume: fn,assertQueue: fn, assertExchange: fn, publish: fn, close: fn, sendToQueue: fn };
+  var ch = { prefetch: fn, nack: fn, ack: fn, bindQueue: fn, consume: fn,assertQueue: fn, assertExchange: fn, publish: fn, close: fn, sendToQueue: fn, on: fn };
   var chFactory = { get: fn }
   
   // Default stubbing behavior
@@ -24,6 +24,7 @@ function build() {
   var ackStub = sinon.stub(ch, 'ack');
   var nackStub = sinon.stub(ch, 'nack');
   var prefetchStub = sinon.stub(ch, 'prefetch').returns(p());
+  var onStub = sinon.stub(ch, 'on').returns(p());
   var getStub = sinon.stub(chFactory, 'get').returns(p(ch));
 
   return {
@@ -36,7 +37,8 @@ function build() {
       ack: ackStub,
       nack: nackStub,
       prefetch: prefetchStub,
-      bindQueue: bindQueueStub
+      bindQueue: bindQueueStub,
+      on: onStub
     },
     chFactory: {
       get: getStub
@@ -405,6 +407,64 @@ suite('queue', function() {
         var handler = stubs.ch.consume.args[0][1];
         handler(message);
       });
+  });
+
+  test('subscribe without reestablish will not listen for close event', function(done) {
+        var stubs = build();
+
+    queue.create(stubs.chFactory)
+      .configure('my-queue')
+      .exchange('my-exchange', 'topic', 'routing.key', { durable: true })
+      .exchange('my-other-exchange', 'topic', 'other.routing.key', { durable: true })
+      .subscribe(fn)
+      .then(function() {
+        assert(stubs.ch.assertExchange.calledWith('my-exchange', 'topic', { durable: true }));
+        assert(stubs.ch.assertExchange.calledWith('my-other-exchange', 'topic', { durable: true }));
+        assert(stubs.ch.bindQueue.calledWith('my-queue', 'my-exchange', 'routing.key'));
+        assert(stubs.ch.bindQueue.calledWith('my-queue', 'my-other-exchange', 'other.routing.key'));
+        assert.equal(stubs.ch.on.callCount, 0);
+
+        done();
+      });
+  });
+
+  test('subscribe with restablish will listen for close event and reconfigure', function(done) {
+
+    var stubs = build();
+
+    queue.create(stubs.chFactory)
+      .configure('my-queue')
+      .reestablish()
+      .exchange('my-exchange', 'topic', 'routing.key', { durable: true })
+      .exchange('my-other-exchange', 'topic', 'other.routing.key', { durable: true })
+      .subscribe(fn)
+      .then(function() {
+
+        var asserts = function(attempt) {
+          assert(stubs.ch.assertExchange.calledWith('my-exchange', 'topic', { durable: true }));
+          assert(stubs.ch.assertExchange.calledWith('my-other-exchange', 'topic', { durable: true }));
+          assert(stubs.ch.bindQueue.calledWith('my-queue', 'my-exchange', 'routing.key'));
+          assert(stubs.ch.bindQueue.calledWith('my-queue', 'my-other-exchange', 'other.routing.key'));
+          assert(stubs.ch.on.alwaysCalledWith('close'));
+
+          assert.equal(stubs.ch.assertExchange.callCount, attempt * 2);
+          assert.equal(stubs.ch.bindQueue.callCount, attempt * 2);
+          assert.equal(stubs.ch.on.callCount, attempt);
+        }
+
+        asserts(1);
+
+        var closeFn = stubs.ch.on.args[0][1];
+
+        closeFn();
+
+        Promise.delay(100).then(function() {
+          asserts(2);
+          done();
+        });
+
+      });
+
   });
 
 });
