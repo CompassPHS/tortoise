@@ -64,7 +64,7 @@ var tortoise = new Tortoise('amqp://localhost', options);
 
 `options` is optional. Current options are:
 
-  * `connectRetries`: `Number` value greater than or equal to `-1`. Defaults to `0`. Tortoise will attempt to connect up to this number. When set to `-1`, tortoise will attempt to connect forever. Note: This does not handle connections that have already been established and were lost.
+  * `connectRetries`: `Number` value greater than or equal to `-1`. Defaults to `-1`. Tortoise will attempt to connect up to this number. When set to `-1`, tortoise will attempt to connect forever. Note: This does not handle connections that have already been established and were lost see [Handling connection or channel closure](#handling-connection-or-channel-closure) for more information on that.
   * `connectRetryInterval`: `Number` value greater than or equal to `0`. Defaults to `1000`. This is the amount of time, in `ms`, that tortoise will wait before attempting to connect again.
 
 
@@ -265,7 +265,7 @@ tortoise
 
 There exists a helper method, `.reestablish()`, to re-establish connections that were lost (when subscribing). It will attempt re-establish the connection and, when successful, will be configured with the same settings as before (queue, exchanges, etc). One caveat with this method is the `.then()` resolution from the `.subscribe()` method will no longer function after the connection is lost. In most cases that is not a problem.
 
-It should be noted that it would be a good idea to also configure tortoise initially with `connectRetries` property set to `-1` (as noted in the [Advanced Setup](#advanced-setup)), or else the connection will not be re-established and an error will be thrown.
+It should be noted that this will begin consuming the `connectRetries` limit. See [Advanced Setup](#advanced-setup) for more information.
 
 Here is an example:
 ```javascript
