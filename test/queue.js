@@ -167,6 +167,34 @@ suite('queue', function() {
       });
   })
 
+  test('dead letter configure will configure with no bindingOpts', function(done) {
+    var stubs = build();
+
+    var queueOpts = {
+      arguments: {
+        'x-dead-letter-exchange': 'dead.exchange'
+      }
+    };
+    var bindingOpts = {testA:'testA'};
+    var exchangeQueueOpts = {testB:'testB'}
+
+    var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
+
+    queue.create(stubs.chFactory)
+      .configure('myQueue')
+      .dead('dead.exchange', 'dead.queue', exchangeQueueOpts)
+      .subscribe(function(msg, ack) {
+        ack();
+      }).then(function() {
+        // Verify setup
+        assert(stubs.ch.assertQueue.calledWithExactly('myQueue', queueOpts));
+        assert(stubs.ch.assertQueue.calledWithExactly('dead.queue', exchangeQueueOpts));
+        assert(stubs.ch.assertExchange.calledWithExactly('dead.exchange', 'topic', {}));
+        assert(stubs.ch.bindQueue.calledWithExactly('dead.queue', 'dead.exchange', '#'));
+        done();
+      });
+  })
+
   test('dead letter with exchange only does not bind to queue', function(done) {
     var stubs = build();
 
