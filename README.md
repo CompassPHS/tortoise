@@ -2,9 +2,9 @@
 
 [![NPM](https://nodei.co/npm/tortoise.png?downloads=true&downloadRank=true)](https://nodei.co/npm/tortoise/)
 
-[![Build Status](https://travis-ci.org/CompassPHS/tortoise.svg)](https://travis-ci.org/CompassPHS/tortoise)
+[![Build Status](https://img.shields.io/travis/CompassPHS/tortoise/master.svg?style=flat-square)](https://travis-ci.org/CompassPHS/tortoise)
 [![Coverage Status](https://img.shields.io/coveralls/CompassPHS/tortoise/master.svg?style=flat-square)](https://coveralls.io/r/CompassPHS/tortoise)
-[![Dependencies](https://david-dm.org/compassphs/tortoise.svg)](https://david-dm.org/compassphs/tortoise)
+[![Dependencies](https://img.shields.io/david/CompassPHS/tortoise/master.svg?style=flat-square)](https://david-dm.org/compassphs/tortoise)
 
     npm install tortoise
 
