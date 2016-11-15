@@ -58,12 +58,14 @@ suite('connectionFactory', function() {
       return Promise.reject({ code: 'ECONNREFUSED' });
     });
 
+    var emitter = sinon.stub({ emit: function() { } });
+
     var host = 'amqp://localhost';
     var options = {
       connectRetries: 10,
       connectRetryInterval: 1
     }
-    var connFactory = connectionFactory.create(host, options);
+    var connFactory = connectionFactory.create(host, options, emitter);
 
     connFactory.get().catch(function(err) {
       assert(Promise.delay.calledWithExactly(options.connectRetryInterval));
