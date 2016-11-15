@@ -1,4 +1,8 @@
-### [v1.0.0](https://github.com/CompassPHS/tortoise/compare/v0.5.1...v1.0.0) (2016-11-11)
+### [v1.0.1](https://github.com/CompassPHS/tortoise/compare/v1.0.0...v1.0.1) (2016-11-16)
+
+#### Updates
+
+* Removed constraint on only reattempting connection on ECONNREFUSED
 
 #### Updates
 
