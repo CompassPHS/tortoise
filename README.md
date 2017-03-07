@@ -70,6 +70,11 @@ var tortoise = new Tortoise('amqp://localhost', options);
 
 ## Publishing to a queue
 
+`publish(message, [options])`
+
+Where `options` is the same as [amqplib publish](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish)
+
+Example:
 ```javascript
 tortoise
   .queue('my-queue', { durable:false })
@@ -78,6 +83,11 @@ tortoise
 
 ## Publishing to an exchange
 
+`publish(routingKey, message, [options])`
+
+Where `options` is the same as [amqplib publish](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish)
+
+Example:
 ```javascript
 tortoise
   .exchange('my-exchange', 'direct', { durable:false })
