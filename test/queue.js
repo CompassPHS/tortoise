@@ -51,7 +51,7 @@ suite('queue', function() {
   test('publish publishes message to provided queue', function(done) {
     var stubs = build();
 
-    var ex = queue.create(stubs.chFactory)
+    var ex = queue.create(stubs.chFactory, null, {})
       .configure('myQueue', {})
       .publish({Hello:'World'})
       .then(function() {
@@ -68,10 +68,21 @@ suite('queue', function() {
   test('publish closes channel', function(done) {
     var stubs = build();
 
-    var ex = queue.create(stubs.chFactory)
+    var ex = queue.create(stubs.chFactory, null, {})
       .publish({})
       .then(function() {
         assert(stubs.ch.close.calledOnce)
+        done();
+      });
+  });
+
+  test('publish keeps channel open when keepChannelOpen is set', function(done) {
+    var stubs = build();
+
+    var ex = queue.create(stubs.chFactory, null, { keepChannelOpen: true })
+      .publish({})
+      .then(function() {
+        assert(!stubs.ch.close.called)
         done();
       });
   });
@@ -81,7 +92,7 @@ suite('queue', function() {
 
     var opts = { persistent: true };
 
-    var ex = queue.create(stubs.chFactory)
+    var ex = queue.create(stubs.chFactory, null, {})
       .publish({}, opts)
       .then(function() {
         assert.equal(stubs.ch.sendToQueue.args[0][2], opts)
@@ -94,7 +105,7 @@ suite('queue', function() {
 
     var opts = {};
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .configure('myQueue', opts)
       .publish({})
       .then(function() {
@@ -106,7 +117,7 @@ suite('queue', function() {
   test('default options are set', function(done) {
     var stubs = build();
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .publish({})
       .then(function() {
         assert(stubs.ch.assertQueue.calledWithExactly('', {}));
@@ -125,7 +136,7 @@ suite('queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .configure('myQueue')
       .dead('dead.exchange', 'dead.queue')
       .subscribe(function(msg, ack) {
@@ -152,7 +163,7 @@ suite('queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .configure('myQueue')
       .dead('dead.exchange', bindingOpts, 'dead.queue', exchangeQueueOpts)
       .subscribe(function(msg, ack) {
@@ -180,7 +191,7 @@ suite('queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .configure('myQueue')
       .dead('dead.exchange', 'dead.queue', exchangeQueueOpts)
       .subscribe(function(msg, ack) {
@@ -206,7 +217,7 @@ suite('queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .configure('myQueue')
       .dead('dead.exchange')
       .subscribe(function(msg, ack) {
@@ -224,7 +235,7 @@ suite('queue', function() {
   test('subscribe to queue calls handler on message received', function(done) {
     var stubs = build();
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .json()
       .subscribe(function(msg) {
         assert.equal(msg.Hello, 'World');
@@ -238,7 +249,7 @@ suite('queue', function() {
   test('subscribe sets msg data to scope', function(done) {
     var stubs = build();
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .subscribe(function(msg) {
         assert.equal(this.field, 'test');
         done();
@@ -253,7 +264,7 @@ suite('queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .subscribe(function(msg, ack) {
         ack();
 
@@ -276,7 +287,7 @@ suite('queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .subscribe(function(msg, ack) {
         ack(true);
 
@@ -299,7 +310,7 @@ suite('queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
     
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .subscribe(function(msg, ack, nack) {
         nack();
         
@@ -323,7 +334,7 @@ suite('queue', function() {
 
     var message = {content:new Buffer(JSON.stringify({Hello:'World'}))};
     
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .subscribe(function(msg, ack, nack) {
         nack(false);
         
@@ -345,7 +356,7 @@ suite('queue', function() {
   test('subscribe sets prefetch when set', function(done) {
     var stubs = build();
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .prefetch(1)
       .subscribe(fn)
       .then(function() {
@@ -359,7 +370,7 @@ suite('queue', function() {
   test('subscribe ignores prefetch when not set', function(done) {
     var stubs = build();
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .subscribe(fn)
       .then(function() {
         assert.equal(stubs.ch.prefetch.callCount, 0);
@@ -369,7 +380,7 @@ suite('queue', function() {
 
   test('subscribe with exchange binds to exchange', function(done) {
     var stubs = build();
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .configure('my-queue')
       .exchange('my-exchange', 'topic', 'routing.key', { durable: true })
       .exchange('my-other-exchange', 'topic', 'other.routing.key', { durable: true })
@@ -385,7 +396,7 @@ suite('queue', function() {
 
   test('subscribe without exchange does not bind to exchange', function(done) {
     var stubs = build();
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .subscribe(fn)
       .then(function() {
         assert.equal(stubs.ch.assertExchange.callCount, 0);
@@ -396,7 +407,7 @@ suite('queue', function() {
 
   test('setup configures and closes channel', function(done) {
     var stubs = build();
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .configure('my-queue')
       .exchange('my-exchange', 'topic', 'routing.key', { durable: true })
       .setup()
@@ -426,7 +437,7 @@ suite('queue', function() {
       done();
     });
     
-    queue.create(stubs.chFactory, eventEmitter)
+    queue.create(stubs.chFactory, eventEmitter, {})
       .json()
       .subscribe(function(msg, ack, nack) {
 
@@ -460,7 +471,7 @@ suite('queue', function() {
 
     var stubs = build();
 
-    queue.create(stubs.chFactory)
+    queue.create(stubs.chFactory, null, {})
       .configure('my-queue')
       .reestablish()
       .exchange('my-exchange', 'topic', 'routing.key', { durable: true })

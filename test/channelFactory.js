@@ -60,7 +60,7 @@ suite('channelFactory', function() {
     stubs.conn.createChannel.onCall(0).returns(p({ id: chId++ }));
     stubs.conn.createChannel.onCall(1).returns(p({ id: chId++ }));
 
-    var chFactory = channelFactory.create('');
+    var chFactory = channelFactory.create('', null, {});
     chFactory.get().then(function(ch1) {
       assert(_.isObject(ch1));
       chFactory.get().then(function(ch2) {

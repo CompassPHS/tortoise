@@ -36,12 +36,12 @@ suite('exchange', function() {
   test('publish publishes message to provided exchange', function(done) {
     var stubs = build();
 
-    var ex = exchange.create(stubs.chFactory)
+    var ex = exchange.create(stubs.chFactory, null, {})
       .configure('myExchange', 'direct', {})
       .publish('rk', {Hello:'World'})
       .then(function() {
         assert(stubs.ch.publish.calledWith('myExchange', 'rk'))
-        
+
         var msg = JSON.parse(stubs.ch.publish.args[0][2].toString());
         assert.equal(msg.Hello, 'World');
 
@@ -53,10 +53,21 @@ suite('exchange', function() {
   test('publish closes channel', function(done) {
     var stubs = build();
 
-    var ex = exchange.create(stubs.chFactory)
+    var ex = exchange.create(stubs.chFactory, null, {})
       .publish('rk', {})
       .then(function() {
         assert(stubs.ch.close.calledOnce)
+        done();
+      });
+  });
+
+  test('publish keeps channel open when keepChannelOpen is set', function(done) {
+    var stubs = build();
+
+    var ex = exchange.create(stubs.chFactory, null, { keepChannelOpen: true })
+      .publish('rk', {})
+      .then(function() {
+        assert(!stubs.ch.close.called)
         done();
       });
   });
@@ -66,7 +77,7 @@ suite('exchange', function() {
 
     var opts = { persistent: true };
 
-    var ex = exchange.create(stubs.chFactory)
+    var ex = exchange.create(stubs.chFactory, null, {})
       .publish('rk', {}, opts)
       .then(function() {
         assert.equal(stubs.ch.publish.args[0][3], opts)
@@ -79,7 +90,7 @@ suite('exchange', function() {
 
     var opts = {};
 
-    exchange.create(stubs.chFactory)
+    exchange.create(stubs.chFactory, null, {})
       .configure('myExchange', 'direct', opts)
       .publish('rk', {})
       .then(function() {
@@ -91,7 +102,7 @@ suite('exchange', function() {
   test('default options are set', function(done) {
     var stubs = build();
 
-    exchange.create(stubs.chFactory)
+    exchange.create(stubs.chFactory, null, {})
       .publish('rk', {})
       .then(function() {
         assert(stubs.ch.assertExchange.calledWithExactly('', '', {}));
@@ -102,7 +113,7 @@ suite('exchange', function() {
   test('setup configures and closes channel', function(done) {
     var stubs = build();
 
-    var ex = exchange.create(stubs.chFactory)
+    var ex = exchange.create(stubs.chFactory, null, {})
       .configure('myExchange', 'direct', {})
       .setup()
       .then(function() {

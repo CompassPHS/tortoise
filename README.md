@@ -66,6 +66,7 @@ var tortoise = new Tortoise('amqp://localhost', options);
 
   * `connectRetries`: `Number` value greater than or equal to `-1`. Defaults to `-1`. Tortoise will attempt to connect up to this number. When set to `-1`, tortoise will attempt to connect forever. Note: This does not handle connections that have already been established and were lost see [Handling connection or channel closure](#handling-connection-or-channel-closure) for more information on that.
   * `connectRetryInterval`: `Number` value greater than or equal to `0`. Defaults to `1000`. This is the amount of time, in `ms`, that tortoise will wait before attempting to connect again.
+  * `keepChannelOpen`: `Boolean` if true, it will reuse the same channel (publish order is guaranteed for messages published in one channel). Default is false and it will create a new channel for every new publish.
 
 
 ## Publishing to a queue
